@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BodyType {
+  CITY_CAR
+  COMPACT_SUV
+  MPV
+}
+
+enum PortType {
+  CCS2
+  GB_T
+  TYPE_2
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  BOOKED
+  MAINTENANCE
+}
+
+enum ServiceType {
+  LEPAS_KUNCI
+  DENGAN_DRIVER
+}
+
+enum InquiryStatus {
+  PENDING_WHATSAPP
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Vehicle {
+  id           String        @id @default(uuid())
+  slug         String        @unique
+  brand        String
+  model        String
+  bodyType     BodyType      @map("body_type")
+  licensePlate String        @unique @map("license_plate")
+  imageUrl     String        @map("image_url")
+  thumbnailUrl String        @map("thumbnail_url")
+  status       VehicleStatus @default(AVAILABLE)
+  isActive     Boolean       @default(true) @map("is_active")
+  tags         String[]      @default([])
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  specs        VehicleSpec?
+  rates        RentalRate[]
+  inquiries    Inquiry[]
+  batteryLogs  BatteryLog[]
+
+  @@map("vehicles")
+}
+
+model VehicleSpec {
+  id                      String   @id @default(uuid())
+  vehicleId               String   @unique @map("vehicle_id")
+  batteryCapacityKwh      Float    @map("battery_capacity_kwh")
+  rangeCltcKm             Int      @map("range_cltc_km")
+  rangeWltpKm             Int?     @map("range_wltp_km")
+  portType                PortType @map("port_type")
+  maxAcKw                 Float    @default(7.0) @map("max_ac_kw")
+  maxDcKw                 Float?   @map("max_dc_kw")
+  seatingCapacity         Int      @map("seating_capacity")
+  portableChargerIncluded Boolean  @default(true) @map("portable_charger_included")
+  gbtAdapterIncluded      Boolean  @default(false) @map("gbt_adapter_included")
+  chargingTimeAcHours     Float    @map("charging_time_ac_hours")
+  chargingTimeDcMinutes   Int?     @map("charging_time_dc_minutes")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  vehicle                 Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("vehicle_specs")
+}
+
+model RentalRate {
+  id                 String      @id @default(uuid())
+  vehicleId          String      @map("vehicle_id")
+  serviceType        ServiceType @map("service_type")
+  dailyRate          Decimal     @map("daily_rate") @db.Decimal(12, 2)
+  depositAmount      Decimal     @map("deposit_amount") @db.Decimal(12, 2)
+  overtimeHourlyRate Decimal     @map("overtime_hourly_rate") @db.Decimal(12, 2)
+
+  vehicle            Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, serviceType])
+  @@map("rental_rates")
+}
+
+model Customer {
+  id               String    @id @default(uuid())
+  fullName         String    @map("full_name")
+  phoneWhatsapp    String    @unique @map("phone_whatsapp")
+  email            String?
+  identityVerified Boolean   @default(false) @map("identity_verified")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  inquiries        Inquiry[]
+
+  @@map("customers")
+}
+
+model Inquiry {
+  id             String        @id @default(uuid())
+  inquiryCode    String        @unique @map("inquiry_code")
+  customerId     String        @map("customer_id")
+  vehicleId      String        @map("vehicle_id")
+  serviceType    ServiceType   @map("service_type")
+  startDate      DateTime      @map("start_date")
+  durationDays   Int           @map("duration_days")
+  pickupLocation String        @map("pickup_location")
+  returnLocation String        @map("return_location")
+  customerNotes  String?       @map("customer_notes")
+  status         InquiryStatus @default(PENDING_WHATSAPP)
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  vehicle        Vehicle       @relation(fields: [vehicleId], references: [id])
+  batteryLog     BatteryLog?
+
+  @@map("inquiries")
+}
+
+model BatteryLog {
+  id                 String    @id @default(uuid())
+  inquiryId          String    @unique @map("inquiry_id")
+  vehicleId          String    @map("vehicle_id")
+  handoverSocPct     Int       @map("handover_soc_pct")
+  handoverOdometerKm Decimal   @map("handover_odometer_km") @db.Decimal(9, 2)
+  returnSocPct       Int?      @map("return_soc_pct")
+  returnOdometerKm   Decimal?  @map("return_odometer_km") @db.Decimal(9, 2)
+  recoveryFeeAmount  Decimal   @default(0.00) @map("recovery_fee_amount") @db.Decimal(12, 2)
+  officerNotes       String?   @map("officer_notes")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  inquiry            Inquiry   @relation(fields: [inquiryId], references: [id])
+  vehicle            Vehicle   @relation(fields: [vehicleId], references: [id])
+
+  @@map("battery_logs")
+}

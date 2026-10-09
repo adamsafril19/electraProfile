@@ -1,0 +1,25 @@
+{
+  "name": "electra-profile-ev-rental",
+  "version": "1.0.0",
+  "description": "Platform Rental Mobil Listrik (EV) Mandiri - B2C Retail & Tourism",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build:web"
+  },
+  "keywords": [
+    "ev-rental",
+    "react-native",
+    "expo",
+    "express",
+    "postgresql"
+  ],
+  "author": "Electra Mobility",
+  "license": "ISC"
+}
