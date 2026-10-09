@@ -30,10 +30,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) 
       <View style={styles.mediaContainer}>
         <Image
           source={{ uri: vehicle.imageUrl }}
-          style={[
-            styles.vehicleImage,
-            vehicle.slug === 'byd-atto-3-superior' && { transform: [{ scale: 1.38 }] }
-          ]}
+          style={styles.vehicleImage}
           resizeMode="contain"
         />
         <View style={styles.categoryBadge}>

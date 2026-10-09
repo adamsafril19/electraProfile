@@ -63,10 +63,7 @@ export default function VehicleDetailScreen() {
           <View style={[styles.mediaCol, isMobile && { minWidth: 0, height: 240, flexBasis: '100%' }]}>
             <Image
               source={{ uri: vehicle.imageUrl }}
-              style={[
-                styles.vehicleImg,
-                vehicle.slug === 'byd-atto-3-superior' && { transform: [{ scale: 1.35 }] }
-              ]}
+              style={styles.vehicleImg}
               resizeMode="contain"
             />
             <View style={styles.badgeTop}>

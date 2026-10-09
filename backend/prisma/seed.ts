@@ -21,8 +21,8 @@ async function main() {
       model: 'Air EV Long Range',
       bodyType: BodyType.CITY_CAR,
       licensePlate: 'DK 1024 EV',
-      imageUrl: 'https://wuling.id/assets/images/air-ev/color/2025/Pro/Pristine_White.png',
-      thumbnailUrl: 'https://wuling.id/assets/images/air-ev/color/2025/Pro/Pristine_White.png',
+      imageUrl: 'http://localhost:5000/images/cars/wuling-air-ev.png',
+      thumbnailUrl: 'http://localhost:5000/images/cars/wuling-air-ev.png',
       tags: ['City Car Lincah', 'Paling Irit', 'Bebas Ganjil-Genap'],
       specs: {
         create: {
@@ -63,8 +63,8 @@ async function main() {
       model: 'Binguo EV Premium Range 410 km',
       bodyType: BodyType.CITY_CAR,
       licensePlate: 'DK 1125 EV',
-      imageUrl: 'https://wuling.id/assets/images/binguo-ev/product-color/pro/750x430-MilkTea.png',
-      thumbnailUrl: 'https://wuling.id/assets/images/binguo-ev/product-color/pro/750x430-MilkTea.png',
+      imageUrl: 'http://localhost:5000/images/cars/wuling-binguo-ev.png',
+      thumbnailUrl: 'http://localhost:5000/images/cars/wuling-binguo-ev.png',
       tags: ['Favorit Wisatawan', 'Retro Modern', 'DC Fast Charging'],
       specs: {
         create: {
@@ -107,8 +107,8 @@ async function main() {
       model: 'Atto 3 Superior Extended',
       bodyType: BodyType.COMPACT_SUV,
       licensePlate: 'DK 1236 EV',
-      imageUrl: 'https://www.byd.com/material/byd-site/eu-v3/model/atto3-evo/pc/exterior-gallery/irisblue/2.webp',
-      thumbnailUrl: 'https://www.byd.com/material/byd-site/eu-v3/model/atto3-evo/pc/exterior-gallery/irisblue/2.webp',
+      imageUrl: 'http://localhost:5000/images/cars/byd-atto-3.png',
+      thumbnailUrl: 'http://localhost:5000/images/cars/byd-atto-3.png',
       tags: ['Premium SUV Crossover', 'CCS2 Universal', 'Blade Battery'],
       specs: {
         create: {
@@ -152,8 +152,8 @@ async function main() {
       model: 'M6 Superior Extended (7-Seater MPV)',
       bodyType: BodyType.MPV,
       licensePlate: 'DK 1347 EV',
-      imageUrl: 'https://www.indorent.co.id/_astro/m6.BJaexOkK_xDA7s.webp',
-      thumbnailUrl: 'https://www.indorent.co.id/_astro/m6.BJaexOkK_xDA7s.webp',
+      imageUrl: 'http://localhost:5000/images/cars/byd-m6.webp',
+      thumbnailUrl: 'http://localhost:5000/images/cars/byd-m6.webp',
       tags: ['Keluarga 7-Seater', 'Paling Luas & Nyaman', 'CCS2 Universal'],
       specs: {
         create: {
@@ -197,8 +197,8 @@ async function main() {
       model: 'Ioniq 5 Signature Long Range',
       bodyType: BodyType.COMPACT_SUV,
       licensePlate: 'DK 1458 EV',
-      imageUrl: 'https://www.indorent.co.id/_astro/ioniq.CWJs8ymx_Z1fosIA.webp',
-      thumbnailUrl: 'https://www.indorent.co.id/_astro/ioniq.CWJs8ymx_Z1fosIA.webp',
+      imageUrl: 'http://localhost:5000/images/cars/hyundai-ioniq-5.webp',
+      thumbnailUrl: 'http://localhost:5000/images/cars/hyundai-ioniq-5.webp',
       tags: ['Futuristik Premium', 'Ultra Fast 350kW', 'Fitur V2L Bivak'],
       specs: {
         create: {

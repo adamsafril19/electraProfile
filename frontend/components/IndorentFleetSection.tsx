@@ -240,8 +240,7 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
                   source={{ uri: currentVehicle.imageUrl }}
                   style={[
                     styles.stageCarImage,
-                    isMobile && styles.stageCarImageMobile,
-                    currentVehicle.slug === 'byd-atto-3-superior' && styles.stageCarImageAtto3
+                    isMobile && styles.stageCarImageMobile
                   ]}
                   resizeMode="contain"
                 />
@@ -342,8 +341,7 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
                       source={{ uri: vehicle.imageUrl }}
                       style={[
                         styles.railThumbImage,
-                        isSelected && styles.railThumbImageSelected,
-                        vehicle.slug === 'byd-atto-3-superior' && { transform: [{ scale: 1.35 }] }
+                        isSelected && styles.railThumbImageSelected
                       ]}
                       resizeMode="contain"
                     />

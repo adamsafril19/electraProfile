@@ -8,8 +8,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Air EV Long Range',
     bodyType: 'CITY_CAR',
     licensePlate: 'DK 1024 EV',
-    imageUrl: 'https://wuling.id/assets/images/air-ev/color/2025/Pro/Pristine_White.png',
-    thumbnailUrl: 'https://wuling.id/assets/images/air-ev/color/2025/Pro/Pristine_White.png',
+    imageUrl: 'http://localhost:5000/images/cars/wuling-air-ev.png',
+    thumbnailUrl: 'http://localhost:5000/images/cars/wuling-air-ev.png',
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Best Seller', 'Paling Irit', 'Bebas Ganjil-Genap'],
@@ -45,8 +45,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Binguo EV Premium Range 410 km',
     bodyType: 'CITY_CAR',
     licensePlate: 'DK 1125 EV',
-    imageUrl: 'https://wuling.id/assets/images/binguo-ev/product-color/pro/750x430-MilkTea.png',
-    thumbnailUrl: 'https://wuling.id/assets/images/binguo-ev/product-color/pro/750x430-MilkTea.png',
+    imageUrl: 'http://localhost:5000/images/cars/wuling-binguo-ev.png',
+    thumbnailUrl: 'http://localhost:5000/images/cars/wuling-binguo-ev.png',
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Favorit Wisatawan', 'Fast Charging Support', 'Retro Elegan'],
@@ -84,8 +84,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Atto 3 Superior Extended',
     bodyType: 'COMPACT_SUV',
     licensePlate: 'DK 1236 EV',
-    imageUrl: 'https://www.byd.com/material/byd-site/eu-v3/model/atto3-evo/pc/exterior-gallery/irisblue/2.webp',
-    thumbnailUrl: 'https://www.byd.com/material/byd-site/eu-v3/model/atto3-evo/pc/exterior-gallery/irisblue/2.webp',
+    imageUrl: 'http://localhost:5000/images/cars/byd-atto-3.png',
+    thumbnailUrl: 'http://localhost:5000/images/cars/byd-atto-3.png',
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Premium SUV', 'CCS2 Universal', 'Blade Battery'],
@@ -124,8 +124,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'M6 Superior Extended (7-Seater MPV)',
     bodyType: 'MPV',
     licensePlate: 'DK 1347 EV',
-    imageUrl: 'https://www.indorent.co.id/_astro/m6.BJaexOkK_xDA7s.webp',
-    thumbnailUrl: 'https://www.indorent.co.id/_astro/m6.BJaexOkK_xDA7s.webp',
+    imageUrl: 'http://localhost:5000/images/cars/byd-m6.webp',
+    thumbnailUrl: 'http://localhost:5000/images/cars/byd-m6.webp',
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Keluarga 7-Seat', 'Paling Luas & Nyaman', 'CCS2 Universal'],
@@ -154,6 +154,46 @@ export const INITIAL_FLEET: Vehicle[] = [
         dailyRate: 1400000,
         depositAmount: 0,
         overtimeHourlyRate: 120000
+      }
+    ]
+  },
+  {
+    id: 'veh-005',
+    slug: 'hyundai-ioniq-5-signature',
+    brand: 'Hyundai',
+    model: 'Ioniq 5 Signature Long Range',
+    bodyType: 'COMPACT_SUV',
+    licensePlate: 'DK 1458 EV',
+    imageUrl: 'http://localhost:5000/images/cars/hyundai-ioniq-5.webp',
+    thumbnailUrl: 'http://localhost:5000/images/cars/hyundai-ioniq-5.webp',
+    status: 'AVAILABLE',
+    isActive: true,
+    tags: ['Futuristik Premium', 'Ultra Fast 350kW', 'Fitur V2L Bivak'],
+    specs: {
+      batteryCapacityKwh: 72.6,
+      rangeCltcKm: 481,
+      rangeWltpKm: 451,
+      portType: 'CCS2',
+      maxAcKw: 11.0,
+      maxDcKw: 350.0,
+      seatingCapacity: 5,
+      portableChargerIncluded: true,
+      gbtAdapterIncluded: false,
+      chargingTimeAcHours: 6.0,
+      chargingTimeDcMinutes: 18
+    },
+    rates: [
+      {
+        serviceType: 'LEPAS_KUNCI',
+        dailyRate: 1100000,
+        depositAmount: 1000000,
+        overtimeHourlyRate: 110000
+      },
+      {
+        serviceType: 'DENGAN_DRIVER',
+        dailyRate: 1650000,
+        depositAmount: 0,
+        overtimeHourlyRate: 150000
       }
     ]
   }

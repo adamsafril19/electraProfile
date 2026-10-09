@@ -5,10 +5,16 @@ import { ENV } from './config/env';
 import apiRoutes from './routes';
 import { errorHandler } from './middlewares/errorHandler';
 
+import path from 'path';
+
 const app = express();
 
 // Security Middlewares
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+  })
+);
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -25,6 +31,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static Assets (Vehicle Cutout Images)
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 // API Base Routes
 app.use('/api/v1', apiRoutes);

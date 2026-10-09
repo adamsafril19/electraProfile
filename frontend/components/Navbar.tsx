@@ -44,42 +44,35 @@ export const Navbar: React.FC = () => {
 
   return (
     <View style={styles.header}>
-      {/* Top Bar Call Center Banner */}
-      <View style={styles.topBar}>
-        <View style={[styles.topBarInner, isPhone && { justifyContent: 'center' }]}>
-          <TouchableOpacity style={styles.callPill} onPress={handleCallCenter}>
-            <View style={styles.badge247}>
-              <Text style={styles.badge247Text}>24/7</Text>
-            </View>
-            <View style={styles.callTextCol}>
-              <Text style={styles.callLabel}>Call Center & Bantuan Darurat</Text>
-              <Text style={styles.callNumber}>0812-3456-7890</Text>
-            </View>
-          </TouchableOpacity>
-
-          {!isPhone && (
-            <View style={styles.topBarRight}>
-              {!isCompact && (
-                <Text style={styles.topBarNotice}>Jam operasional admin 07.00 - 23.00 • Harga transparan tanpa biaya tersembunyi</Text>
-              )}
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Main Navbar */}
+      {/* Main Navbar - Single Row Header matching INDORENT */}
       <View style={styles.mainNav}>
         <View style={styles.mainNavInner}>
-          {/* Corporate Brand Logo */}
-          <TouchableOpacity onPress={() => navigate('/')} style={styles.brandRow}>
-            <View style={styles.logoMark}>
-              <Text style={styles.logoMarkText}>E</Text>
-            </View>
-            <View>
-              <Text style={styles.brandName}>ELECTRA</Text>
-              <Text style={styles.brandTagline}>ELECTRIC VEHICLE RENTAL</Text>
-            </View>
-          </TouchableOpacity>
+          {/* Corporate Brand Logo & Call Center Pill */}
+          <View style={styles.leftGroup}>
+            <TouchableOpacity onPress={() => navigate('/')} style={styles.brandRow}>
+              <View style={styles.logoMark}>
+                <Text style={styles.logoMarkText}>E</Text>
+              </View>
+              <View>
+                <Text style={styles.brandName}>ELECTRA</Text>
+                <Text style={styles.brandTagline}>ELECTRIC VEHICLE RENTAL</Text>
+              </View>
+            </TouchableOpacity>
+
+            {!isPhone && <View style={styles.headerDivider} />}
+
+            {!isPhone && (
+              <TouchableOpacity style={styles.callPill} onPress={handleCallCenter} activeOpacity={0.8}>
+                <View style={styles.badge247}>
+                  <Text style={styles.badge247Text}>24/7</Text>
+                </View>
+                <View style={styles.callTextCol}>
+                  <Text style={styles.callLabel}>Call Center</Text>
+                  <Text style={styles.callNumber}>0812-3456-7890</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Desktop Navigation Links */}
           {!isCompact && (
@@ -125,6 +118,16 @@ export const Navbar: React.FC = () => {
         {/* Mobile Dropdown Menu */}
         {isCompact && menuOpen && (
           <View style={styles.mobileMenu}>
+            <TouchableOpacity style={styles.mobileCallPill} onPress={handleCallCenter}>
+              <View style={styles.badge247}>
+                <Text style={styles.badge247Text}>24/7</Text>
+              </View>
+              <View style={styles.callTextCol}>
+                <Text style={styles.callLabel}>Call Center 24 Jam</Text>
+                <Text style={styles.callNumber}>0812-3456-7890</Text>
+              </View>
+            </TouchableOpacity>
+
             {navItems.map((item) => {
               const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
               return (
@@ -151,27 +154,26 @@ const styles = StyleSheet.create({
     borderBottomColor: '#0A253D',
     zIndex: 100,
   },
-  topBar: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-  },
-  topBarInner: {
-    maxWidth: 1300,
-    width: '100%',
-    alignSelf: 'center',
+  leftGroup: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
+    gap: 16,
+  },
+  headerDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   callPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 2,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   badge247: {
     backgroundColor: COLORS.brandBlue,
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
   callLabel: {
     fontSize: 9,
     color: 'rgba(255, 255, 255, 0.6)',
-    fontWeight: '500',
+    fontWeight: '600',
     letterSpacing: 0.3,
   },
   callNumber: {
@@ -200,38 +202,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  topBarRight: {
+  mobileCallPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-  },
-  topBarNotice: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.65)',
-    fontWeight: '400',
-  },
-  langPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: 'rgba(7, 149, 254, 0.1)',
     borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    gap: 4,
-  },
-  langActive: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.white,
-  },
-  langSep: {
-    fontSize: 9,
-    color: 'rgba(255, 255, 255, 0.3)',
-  },
-  langInactive: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(7, 149, 254, 0.25)',
+    marginBottom: 8,
   },
   mainNav: {
     paddingVertical: 14,
