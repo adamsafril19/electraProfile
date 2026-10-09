@@ -3,8 +3,13 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, use
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { COLORS } from '../../constants/colors';
 import { Vehicle } from '../../types/fleet';
-import { fetchVehicleBySlug } from '../../services/api';
+import { fetchVehicleResult } from '../../services/api';
+import { OfflineBanner } from '../../components/OfflineBanner';
 import { WhatsAppModal } from '../../components/WhatsAppModal';
+import { DateField } from '../../components/DateField';
+import { DurationStepper } from '../../components/DurationStepper';
+import { PriceBreakdown, ServiceNote } from '../../components/PriceBreakdown';
+import { getDateError, todayStr } from '../../utils/date';
 
 export default function VehicleDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -15,14 +20,31 @@ export default function VehicleDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedService, setSelectedService] = useState<'LEPAS_KUNCI' | 'DENGAN_DRIVER'>('LEPAS_KUNCI');
+  const [durationDays, setDurationDays] = useState(3);
+  const [startDate, setStartDate] = useState(todayStr());
+  const [dateError, setDateError] = useState<string | null>(null);
+
+  // Tanggal harus valid sebelum modal dibuka, karena modal hanya menampilkan ringkasan
+  const openBooking = () => {
+    const err = getDateError(startDate);
+    setDateError(err);
+    if (!err) setModalVisible(true);
+  };
+
+  const [offline, setOffline] = useState(false);
+
+  const loadVehicle = () => {
+    if (!slug) return;
+    setLoading(true);
+    fetchVehicleResult(slug).then(({ vehicle: data, offline: isOffline }) => {
+      setVehicle(data || null);
+      setOffline(isOffline);
+      setLoading(false);
+    });
+  };
 
   useEffect(() => {
-    if (slug) {
-      fetchVehicleBySlug(slug).then((data) => {
-        setVehicle(data || null);
-        setLoading(false);
-      });
-    }
+    loadVehicle();
   }, [slug]);
 
   if (loading) {
@@ -47,11 +69,13 @@ export default function VehicleDetailScreen() {
   const lepasRate = vehicle.rates.find(r => r.serviceType === 'LEPAS_KUNCI');
   const driverRate = vehicle.rates.find(r => r.serviceType === 'DENGAN_DRIVER');
   const currentPrice = selectedService === 'LEPAS_KUNCI' ? lepasRate?.dailyRate : driverRate?.dailyRate;
+  const totalPrice = (currentPrice || 0) * durationDays;
 
   return (
     <View style={{ flex: 1 }}>
     <View style={[styles.container, isMobile && { paddingBottom: 96 }]}>
       <View style={styles.inner}>
+        {offline && <OfflineBanner onRetry={loadVehicle} />}
         {/* Breadcrumb Navigation */}
         <TouchableOpacity onPress={() => router.push('/armada')} style={styles.breadcrumb}>
           <Text style={styles.breadcrumbText}>← Kembali ke Katalog Armada</Text>
@@ -110,20 +134,36 @@ export default function VehicleDetailScreen() {
               {!isMobile && (
                 <TouchableOpacity
                   style={styles.ctaBooking}
-                  onPress={() => setModalVisible(true)}
+                  onPress={openBooking}
                 >
                   <Text style={styles.ctaBookingText}>Reservasi WhatsApp →</Text>
                 </TouchableOpacity>
               )}
             </View>
 
-            {selectedService === 'LEPAS_KUNCI' && lepasRate && (
-              <View style={styles.depositNotice}>
-                <Text style={styles.depositNoticeText}>
-                  * Deposit jaminan: Rp {lepasRate.depositAmount.toLocaleString('id-ID')} (dikembalikan penuh via transfer H+1 s/d H+3 hari kerja setelah unit kembali bebas ETLE).
-                </Text>
-              </View>
-            )}
+            {/* Duration Selector & Total */}
+            <ServiceNote serviceType={selectedService} />
+            <View style={{ marginTop: 12 }}>
+              <DurationStepper value={durationDays} onChange={setDurationDays} />
+            </View>
+            <View style={{ marginTop: 12 }}>
+              <DateField
+                value={startDate}
+                onChange={(v) => {
+                  setStartDate(v);
+                  setDateError(null);
+                }}
+                error={dateError}
+              />
+            </View>
+            <View style={styles.totalRow}>
+              <PriceBreakdown
+                serviceType={selectedService}
+                dailyRate={currentPrice || 0}
+                days={durationDays}
+                depositAmount={lepasRate?.depositAmount || 0}
+              />
+            </View>
 
             {/* Key Specs Pills */}
             <View style={styles.matrixRow}>
@@ -209,6 +249,9 @@ export default function VehicleDetailScreen() {
         visible={modalVisible}
         vehicle={vehicle}
         initialServiceType={selectedService}
+        initialDurationDays={durationDays}
+        initialStartDate={startDate}
+        showSelectors={false}
         onClose={() => setModalVisible(false)}
       />
     </View>
@@ -218,9 +261,9 @@ export default function VehicleDetailScreen() {
       <View style={styles.stickyBar}>
         <View style={{ flex: 1 }}>
           <Text style={styles.stickyName} numberOfLines={1}>{vehicle.brand} {vehicle.model}</Text>
-          <Text style={styles.stickyPrice}>Rp {currentPrice?.toLocaleString('id-ID')} / hari</Text>
+          <Text style={styles.stickyPrice}>Rp {totalPrice.toLocaleString('id-ID')} / {durationDays} hari</Text>
         </View>
-        <TouchableOpacity style={styles.stickyBtn} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity style={styles.stickyBtn} onPress={openBooking}>
           <Text style={styles.stickyBtnText}>Booking via WhatsApp</Text>
         </TouchableOpacity>
       </View>
@@ -303,7 +346,7 @@ const styles = StyleSheet.create({
   },
   badgeTopText: {
     color: COLORS.white,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
   },
   bookingCard: {
@@ -317,7 +360,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brandSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.brandBlue,
     letterSpacing: 1.2,
@@ -369,7 +412,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   priceLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#64748B',
     marginBottom: 2,
   },
@@ -382,6 +425,41 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#64748B',
+  },
+  durationRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 4,
+  },
+  durationBox: {
+    flex: 1,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F8FAFC',
+  },
+  durationBoxActive: {
+    backgroundColor: COLORS.deepInk,
+    borderColor: COLORS.deepInk,
+  },
+  durationText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  durationTextActive: {
+    color: COLORS.white,
+  },
+  totalRow: {
+    marginTop: 12,
+  },
+  totalFigure: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.brandBlue,
   },
   ctaBooking: {
     backgroundColor: COLORS.brandBlue,
@@ -441,7 +519,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   depositNoticeText: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#64748B',
     lineHeight: 16,
   },
@@ -463,13 +541,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   matrixKey: {
-    fontSize: 8.5,
+    fontSize: 12,
     fontWeight: '700',
     color: '#64748B',
     marginBottom: 2,
   },
   matrixVal: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.deepInk,
   },

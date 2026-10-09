@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { COLORS } from '../../constants/colors';
 import { Vehicle } from '../../types/fleet';
-import { fetchFleetList } from '../../services/api';
+import { fetchFleetResult } from '../../services/api';
+import { OfflineBanner } from '../../components/OfflineBanner';
 import { VehicleCard } from '../../components/VehicleCard';
 import { WhatsAppModal } from '../../components/WhatsAppModal';
 
@@ -13,11 +14,19 @@ export default function FleetCatalogScreen() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    fetchFleetList().then((data) => {
-      setFleet(data);
+  const [offline, setOffline] = useState(false);
+
+  const loadFleet = () => {
+    setLoading(true);
+    fetchFleetResult().then(({ vehicles, offline: isOffline }) => {
+      setFleet(vehicles);
+      setOffline(isOffline);
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    loadFleet();
   }, []);
 
   const filteredFleet = fleet.filter((v) => {
@@ -68,6 +77,7 @@ export default function FleetCatalogScreen() {
 
       {/* Grid Content */}
       <View style={styles.content}>
+        {offline && !loading && <OfflineBanner onRetry={loadFleet} />}
         {loading ? (
           <ActivityIndicator size="large" color={COLORS.brandBlue} style={{ marginVertical: 48 }} />
         ) : filteredFleet.length === 0 ? (
@@ -122,7 +132,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   eyebrowText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: '#38BDF8',
     letterSpacing: 1.5,

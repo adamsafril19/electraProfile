@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   eyebrowText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: '#F87171',
     letterSpacing: 1.5,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   dispatchTopBadgeText: {
     color: COLORS.white,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 1,
   },
@@ -224,15 +224,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cardTag: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.brandBlue,
     letterSpacing: 1,
   },
   cardHeaderSmall: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748B',
     letterSpacing: 0.8,
   },
   guaranteeTitle: {

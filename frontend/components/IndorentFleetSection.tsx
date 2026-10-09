@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
     gap: 6
   },
   stageSpecPillKey: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: '#64748B',
     letterSpacing: 0.5
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(16, 185, 129, 0.3)'
   },
   stageSpecPillBadgeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#34D399'
   },
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
     minWidth: 260
   },
   stageCategoryEyebrow: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 2,
     color: '#0795FE',
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16
   },
   priceLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#64748B',
     fontWeight: '600'
   },
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   railLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.5,
     color: '#64748B',
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   railThumbPrice: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#0795FE',
     marginTop: 2

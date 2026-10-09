@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   eyebrowText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: '#38BDF8',
     letterSpacing: 1.5,
@@ -169,15 +169,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cardTag: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.brandBlue,
     letterSpacing: 1,
   },
   cardHeaderSmall: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748B',
     letterSpacing: 0.8,
   },
   cardTitle: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   noteFoot: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: '#64748B',
     lineHeight: 18,
   },

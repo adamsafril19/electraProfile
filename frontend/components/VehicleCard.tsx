@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   categoryBadgeText: {
     color: COLORS.white,
-    fontSize: 10.5,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   featureBadgeText: {
     color: COLORS.white,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   brandSubtitle: {
-    fontSize: 10.5,
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.brandBlue,
     letterSpacing: 1.2,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   specKey: {
-    fontSize: 9.5,
+    fontSize: 12,
     fontWeight: '700',
     color: '#64748B',
     letterSpacing: 0.5,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A34A',
   },
   equipmentText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     color: '#15803D',
     flex: 1,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   pricingLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
     color: '#64748B',
     marginBottom: 2,
@@ -277,11 +277,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   driverSubLabel: {
-    fontSize: 9.5,
+    fontSize: 12,
     color: '#64748B',
   },
   driverSubPrice: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.brandBlue,
   },

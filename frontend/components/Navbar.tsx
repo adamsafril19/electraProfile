@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   badge247Text: {
     color: COLORS.white,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   callLabel: {
-    fontSize: 9,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600',
     letterSpacing: 0.3,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   brandTagline: {
-    fontSize: 8.5,
+    fontSize: 12,
     fontWeight: '700',
     color: 'rgba(255, 255, 255, 0.55)',
     letterSpacing: 1,

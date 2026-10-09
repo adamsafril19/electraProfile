@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   preFooterLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.brandBlueHover,
     letterSpacing: 1.2,
@@ -234,11 +234,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   copyrightText: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.45)',
   },
   legalSub: {
-    fontSize: 11,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.35)',
   },
 });

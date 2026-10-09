@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, P
 import { useRouter } from 'expo-router';
 import { COLORS } from '../constants/colors';
 import { Vehicle } from '../types/fleet';
-import { fetchFleetList } from '../services/api';
+import { fetchFleetResult } from '../services/api';
+import { OfflineBanner } from '../components/OfflineBanner';
 import { VehicleCard } from '../components/VehicleCard';
 import { IndorentFleetSection } from '../components/IndorentFleetSection';
 import { QuickBookingWidget } from '../components/QuickBookingWidget';
 import { TrustBadges } from '../components/TrustBadges';
 import { WhatsAppModal } from '../components/WhatsAppModal';
+import { todayStr } from '../utils/date';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -18,21 +20,29 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [bookingContext, setBookingContext] = useState<{
-    serviceType: 'LEPAS_KUNCI' | 'DENGAN_DRIVER';
-    durationDays: number;
-    pickupLocation: string;
-  }>({
-    serviceType: 'LEPAS_KUNCI',
+  const DEFAULT_BOOKING_CONTEXT = {
+    serviceType: 'LEPAS_KUNCI' as 'LEPAS_KUNCI' | 'DENGAN_DRIVER',
     durationDays: 3,
+    startDate: todayStr(),
     pickupLocation: 'Bandara I Gusti Ngurah Rai (Kedatangan)',
-  });
+    // true = pilihan sudah ditentukan di form cepat, modal tidak menampilkan ulang
+    selectionLocked: false,
+  };
+  const [bookingContext, setBookingContext] = useState(DEFAULT_BOOKING_CONTEXT);
 
-  useEffect(() => {
-    fetchFleetList().then((data) => {
-      setFleet(data);
+  const [offline, setOffline] = useState(false);
+
+  const loadFleet = () => {
+    setLoading(true);
+    fetchFleetResult().then(({ vehicles, offline: isOffline }) => {
+      setFleet(vehicles);
+      setOffline(isOffline);
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    loadFleet();
   }, []);
 
   const handleConsultWA = () => {
@@ -45,6 +55,8 @@ export default function HomeScreen() {
   };
 
   const handleBookVehicle = (v: Vehicle) => {
+    // Dibuka dari kartu unit (bukan form cepat): modal yang memegang pilihan
+    setBookingContext({ ...DEFAULT_BOOKING_CONTEXT, startDate: todayStr() });
     setSelectedVehicle(v);
     setModalVisible(true);
   };
@@ -53,13 +65,16 @@ export default function HomeScreen() {
     vehicleId: string;
     serviceType: 'LEPAS_KUNCI' | 'DENGAN_DRIVER';
     durationDays: number;
+    startDate: string;
     pickupLocation: string;
   }) => {
     const target = fleet.find((f) => f.id === params.vehicleId) || fleet[0];
     setBookingContext({
       serviceType: params.serviceType,
       durationDays: params.durationDays,
+      startDate: params.startDate,
       pickupLocation: params.pickupLocation,
+      selectionLocked: true,
     });
     setSelectedVehicle(target);
     setModalVisible(true);
@@ -135,6 +150,7 @@ export default function HomeScreen() {
       {/* SECTION ARMADA */}
       <View style={styles.fleetBand}>
         <View style={styles.sectionWrap}>
+          {offline && !loading && <OfflineBanner onRetry={loadFleet} />}
           {loading ? (
             <ActivityIndicator size="large" color="#38BDF8" style={{ marginVertical: 48 }} />
           ) : (
@@ -190,7 +206,9 @@ export default function HomeScreen() {
         vehicle={selectedVehicle}
         initialServiceType={bookingContext.serviceType}
         initialDurationDays={bookingContext.durationDays}
+        initialStartDate={bookingContext.startDate}
         initialPickupLocation={bookingContext.pickupLocation}
+        showSelectors={!bookingContext.selectionLocked}
         onClose={() => setModalVisible(false)}
       />
     </View>
@@ -316,7 +334,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   eyebrowText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: '#38BDF8',
     letterSpacing: 1.5,
@@ -404,7 +422,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   statLabel: {
-    fontSize: 10.5,
+    fontSize: 12,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 4,
@@ -466,7 +484,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   stepsEyebrow: {
-    fontSize: 10.5,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.brandBlue,
     letterSpacing: 1.5,

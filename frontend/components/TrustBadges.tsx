@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   eyebrowText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.brandBlue,
     letterSpacing: 1.5,

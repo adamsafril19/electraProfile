@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, useWindowDimensions } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Vehicle } from '../types/fleet';
+import { DateField } from './DateField';
+import { DurationStepper } from './DurationStepper';
+import { ServiceNote } from './PriceBreakdown';
+import { getDateError, todayStr } from '../utils/date';
 
 interface QuickBookingWidgetProps {
   vehicles: Vehicle[];
@@ -9,21 +13,30 @@ interface QuickBookingWidgetProps {
     vehicleId: string;
     serviceType: 'LEPAS_KUNCI' | 'DENGAN_DRIVER';
     durationDays: number;
+    startDate: string;
     pickupLocation: string;
   }) => void;
 }
 
 export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles, onQuickBook }) => {
+  const { width } = useWindowDimensions();
+  const isNarrow = width < 480;
   const [serviceType, setServiceType] = useState<'LEPAS_KUNCI' | 'DENGAN_DRIVER'>('LEPAS_KUNCI');
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>(vehicles[0]?.id || '');
   const [durationDays, setDurationDays] = useState<number>(3);
   const [pickupLocation, setPickupLocation] = useState<string>('Bandara I Gusti Ngurah Rai (Kedatangan)');
+  const [startDate, setStartDate] = useState<string>(todayStr());
+  const [dateError, setDateError] = useState<string | null>(null);
 
   const handleSubmit = () => {
+    const err = getDateError(startDate);
+    setDateError(err);
+    if (err) return;
     onQuickBook({
       vehicleId: selectedVehicleId || vehicles[0]?.id,
       serviceType,
       durationDays,
+      startDate,
       pickupLocation,
     });
   };
@@ -37,7 +50,7 @@ export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles
           onPress={() => setServiceType('LEPAS_KUNCI')}
         >
           <Text style={[styles.tabLabel, serviceType === 'LEPAS_KUNCI' && styles.tabLabelActive]}>
-            Sewa Lepas Kunci (24 Jam)
+            {isNarrow ? 'Lepas Kunci' : 'Sewa Lepas Kunci (24 Jam)'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -45,12 +58,14 @@ export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles
           onPress={() => setServiceType('DENGAN_DRIVER')}
         >
           <Text style={[styles.tabLabel, serviceType === 'DENGAN_DRIVER' && styles.tabLabelActive]}>
-            Sewa Dengan Pengemudi (12 Jam)
+            {isNarrow ? 'Dengan Sopir' : 'Sewa Dengan Pengemudi (12 Jam)'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.formContent}>
+      <View style={[styles.formContent, isNarrow && { padding: 16, gap: 14 }]}>
+        <ServiceNote serviceType={serviceType} />
+
         {/* Unit Selector */}
         <View style={styles.sectionField}>
           <Text style={styles.fieldLabel}>PILIH MODEL KENDARAAN</Text>
@@ -78,23 +93,7 @@ export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles
         {/* Row 2: Durasi & Lokasi */}
         <View style={styles.inputRow}>
           <View style={styles.colHalf}>
-            <Text style={styles.fieldLabel}>DURASI PENYEWAAN</Text>
-            <View style={styles.durationSelector}>
-              {[1, 2, 3, 4, 7].map((days) => {
-                const isSelected = durationDays === days;
-                return (
-                  <TouchableOpacity
-                    key={days}
-                    style={[styles.dayBox, isSelected && styles.dayBoxActive]}
-                    onPress={() => setDurationDays(days)}
-                  >
-                    <Text style={[styles.dayText, isSelected && styles.dayTextActive]}>
-                      {days} {days === 1 ? 'Hari' : 'Hari'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <DurationStepper value={durationDays} onChange={setDurationDays} />
           </View>
 
           <View style={styles.colHalf}>
@@ -104,14 +103,23 @@ export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles
               value={pickupLocation}
               onChangeText={setPickupLocation}
               placeholder="Contoh: Bandara, Stasiun, atau Nama Hotel"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#64748B"
             />
           </View>
         </View>
 
+        <DateField
+          value={startDate}
+          onChange={(v) => {
+            setStartDate(v);
+            setDateError(null);
+          }}
+          error={dateError}
+        />
+
         {/* Action Button */}
         <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-          <Text style={styles.submitBtnText}>CEK KETERSEDIAAN & LANJUTKAN KE WHATSAPP →</Text>
+          <Text style={styles.submitBtnText}>{isNarrow ? 'LANJUTKAN KE WHATSAPP →' : 'CEK KETERSEDIAAN & LANJUTKAN KE WHATSAPP →'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -169,7 +177,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   fieldLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '800',
     color: '#475569',
     letterSpacing: 0.8,
@@ -180,6 +188,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   carPill: {
+    minHeight: 44,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
@@ -203,7 +212,7 @@ const styles = StyleSheet.create({
     color: COLORS.brandBlue,
   },
   carPillSub: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#64748B',
     fontWeight: '500',
   },
@@ -239,7 +248,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.deepInk,
   },
   dayText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '700',
     color: '#475569',
   },
@@ -247,7 +256,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   textInput: {
-    height: 42,
+    height: 44,
     borderWidth: 1,
     borderColor: '#CBD5E1',
     borderRadius: 6,
