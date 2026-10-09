@@ -80,8 +80,8 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* 1. SECTION HEADER (IDENTIK INDORENT) */}
-      <View style={styles.headerGrid}>
+      {/* 1. SECTION HEADER */}
+      <View style={[styles.headerGrid, isMobile && Platform.OS === 'web' && ({ gridTemplateColumns: '1fr' } as any)]}>
         <View style={styles.headerLeft}>
           <View style={styles.eyebrowRow}>
             <Text style={styles.eyebrowText}>ARMADA LISTRIK KAMI</Text>
@@ -109,7 +109,7 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
                   viewMode === 'stage' && styles.modeToggleTextActive
                 ]}
               >
-                Panggung Showcase (INDORENT)
+                Showcase
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -122,14 +122,14 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
                   viewMode === 'grid' && styles.modeToggleTextActive
                 ]}
               >
-                Tampilan Grid ({vehicles.length})
+                Grid ({vehicles.length})
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      {/* 2. CATEGORY TABS PILL BAR (IDENTIK INDORENT) */}
+      {/* 2. CATEGORY TABS PILL BAR */}
       <View style={styles.tabsContainer}>
         <ScrollView
           horizontal
@@ -199,8 +199,8 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
 
       {viewMode === 'stage' && currentVehicle ? (
         <View style={styles.stageSectionWrap}>
-          {/* 3. INTERACTIVE FLEET STAGE (THE INDORENT STAGE SHOWCASE) */}
-          <View style={styles.fleetStage}>
+          {/* 3. INTERACTIVE FLEET STAGE */}
+          <View style={[styles.fleetStage, isMobile && styles.fleetStageMobile]}>
             {/* Ambient Lighting & Glow */}
             <View style={styles.stageGlow} pointerEvents="none" />
 
@@ -238,15 +238,15 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
               >
                 <Image
                   source={{ uri: currentVehicle.imageUrl }}
-                  style={styles.stageCarImage}
+                  style={[styles.stageCarImage, isMobile && styles.stageCarImageMobile]}
                   resizeMode="contain"
                 />
               </TouchableOpacity>
             </View>
 
             {/* Stage Bottom Bar Overlay (Title, Price & Controls) */}
-            <View style={styles.stageBottomBar}>
-              <View style={styles.stageCarInfo}>
+            <View style={[styles.stageBottomBar, isMobile && styles.stageBottomBarMobile]}>
+              <View style={[styles.stageCarInfo, isMobile && { minWidth: 0 }]}>
                 <Text style={styles.stageCategoryEyebrow}>
                   {getCategoryLabel(currentVehicle.bodyType)}
                 </Text>
@@ -279,7 +279,7 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
               </View>
 
               {/* Action Controls & Navigation Arrows */}
-              <View style={styles.stageControls}>
+              <View style={[styles.stageControls, isMobile && styles.stageControlsMobile]}>
                 <View style={styles.navArrowsGroup}>
                   <TouchableOpacity
                     style={styles.navArrowBtn}
@@ -298,14 +298,14 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
                 </View>
 
                 <TouchableOpacity
-                  style={styles.detailCtaBtn}
+                  style={[styles.detailCtaBtn, isMobile && styles.ctaFlexMobile]}
                   onPress={() => router.push(`/armada/${currentVehicle.slug}` as any)}
                 >
                   <Text style={styles.detailCtaBtnText}>Spesifikasi Lengkap</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.bookingCtaBtn}
+                  style={[styles.bookingCtaBtn, isMobile && styles.ctaFlexMobile]}
                   onPress={() => onBookVehicle(currentVehicle)}
                 >
                   <Text style={styles.bookingCtaBtnText}>Reservasi WhatsApp →</Text>
@@ -432,8 +432,9 @@ const styles = StyleSheet.create({
     gap: 8
   },
   modeToggleBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
@@ -483,9 +484,31 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
 
-  // 3. Stage Container (INDORENT SHOWCASE)
+  // 3. Stage Container
   stageSectionWrap: {
     width: '100%'
+  },
+  fleetStageMobile: {
+    padding: 14,
+    borderRadius: 20,
+    minHeight: 0
+  },
+  stageCarImageMobile: {
+    height: 170,
+    width: '100%'
+  },
+  stageBottomBarMobile: {
+    padding: 16,
+    flexDirection: 'column',
+    alignItems: 'stretch'
+  },
+  stageControlsMobile: {
+    width: '100%'
+  },
+  ctaFlexMobile: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   fleetStage: {
     width: '100%',
@@ -511,7 +534,8 @@ const styles = StyleSheet.create({
     height: '40%',
     borderRadius: 9999,
     backgroundColor: 'rgba(7, 149, 254, 0.12)',
-    transform: [{ translateX: -150 }, { translateY: -60 }]
+    transform: [{ translateX: -150 }, { translateY: -60 }],
+    opacity: 0.9
   },
 
   // Top Specs on Stage
@@ -672,9 +696,9 @@ const styles = StyleSheet.create({
     gap: 6
   },
   navArrowBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
@@ -688,6 +712,8 @@ const styles = StyleSheet.create({
     fontWeight: '300'
   },
   detailCtaBtn: {
+    minHeight: 48,
+    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 9999,
@@ -701,6 +727,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF'
   },
   bookingCtaBtn: {
+    minHeight: 48,
+    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 22,
     borderRadius: 9999,

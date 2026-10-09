@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Platform, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '../constants/colors';
 import { Vehicle } from '../types/fleet';
@@ -12,6 +12,8 @@ import { WhatsAppModal } from '../components/WhatsAppModal';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [fleet, setFleet] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -32,6 +34,15 @@ export default function HomeScreen() {
       setLoading(false);
     });
   }, []);
+
+  const handleConsultWA = () => {
+    const url = 'https://wa.me/6281234567890?text=Halo%20Admin%20Electra%2C%20saya%20ingin%20konsultasi%20reservasi%20mobil%20listrik';
+    if (Platform.OS === 'web') {
+      window.open(url, '_blank');
+    } else {
+      Linking.openURL(url);
+    }
+  };
 
   const handleBookVehicle = (v: Vehicle) => {
     setSelectedVehicle(v);
@@ -56,73 +67,86 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* HERO SECTION (Modeled after INDORENT Deep-Ink Editorial Hero) */}
-      <View style={styles.hero}>
+      {/* HERO SECTION */}
+      <View style={[styles.hero, isMobile && styles.heroMobile]}>
+        <View style={styles.heroGlow} pointerEvents="none" />
         <View style={styles.heroInner}>
           <View style={styles.eyebrowRow}>
             <Text style={styles.eyebrowText}>RENTAL MOBIL LISTRIK MANDIRI</Text>
             <View style={styles.eyebrowLine} />
           </View>
 
-          <Text style={styles.heroTitle}>
-            Sewa Mobil Listrik{'\n'}
-            <Text style={styles.heroTitleAccent}>untuk Wisatawan & Retail</Text>
+          <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
+            Rental Mobil Listrik{'\n'}
+            <Text style={styles.heroTitleAccent}>Lepas Kunci & Driver</Text>
           </Text>
 
           <Text style={styles.heroSubtitle}>
-            Solusi mobilitas ramah lingkungan lepas kunci dan dengan pengemudi. Transparansi tarif harian mulai Rp350.000/hari, jaminan kesiapan baterai prima 80–100%, serta perlindungan darurat 24 jam.
+            Tarif transparan, baterai siap pakai, dan perlindungan darurat 24 jam. Pilih unit, kirim reservasi ke WhatsApp dalam satu klik.
           </Text>
+
+          {/* Price + range validation (5-10 second rule) */}
+          <View style={styles.priceHighlight}>
+            <Text style={styles.priceHighlightFrom}>Mulai</Text>
+            <Text style={styles.priceHighlightValue}>Rp350.000</Text>
+            <Text style={styles.priceHighlightUnit}>/hari</Text>
+            <View style={styles.priceHighlightDivider} />
+            <Text style={styles.priceHighlightRange}>Baterai penuh ± 300–410 km • Termasuk Portable Charger</Text>
+          </View>
+
+          <View style={styles.uspRow}>
+            {['Baterai Siap Pakai 100%', 'Bebas Ganjil-Genap', 'Unit Pengganti 24 Jam'].map((label) => (
+              <View key={label} style={styles.uspBadge}>
+                <View style={styles.uspDot} />
+                <Text style={styles.uspText}>{label}</Text>
+              </View>
+            ))}
+          </View>
 
           <View style={styles.heroActionRow}>
             <TouchableOpacity style={styles.heroBtnPrimary} onPress={() => router.push('/armada')}>
-              <Text style={styles.heroBtnPrimaryText}>Lihat Katalog Armada EV</Text>
+              <Text style={styles.heroBtnPrimaryText}>Lihat Armada</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.heroBtnOutline} onPress={() => router.push('/syarat-ketentuan')}>
-              <Text style={styles.heroBtnOutlineText}>Syarat & Kebijakan Sewa</Text>
+            <TouchableOpacity style={styles.heroBtnWa} onPress={handleConsultWA}>
+              <Text style={styles.heroBtnWaText}>Konsultasi Cepat (WA)</Text>
             </TouchableOpacity>
           </View>
 
           {/* Quick Booking Reservation Widget */}
           <QuickBookingWidget vehicles={fleet} onQuickBook={handleQuickBook} />
 
-          {/* Corporate Stats Banner (Mirroring INDORENT Hero Stats) */}
+          {/* Stats Banner */}
           <View style={styles.statsBar}>
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>100%</Text>
-              <Text style={styles.statLabel}>Kesiapan Baterai Handover</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>± 410 km</Text>
-              <Text style={styles.statLabel}>Radius Tempuh Armada</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>60–90 Mnt</Text>
-              <Text style={styles.statLabel}>Garansi Mobil Pengganti</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>24 Jam</Text>
-              <Text style={styles.statLabel}>Roadside Assistance Siaga</Text>
-            </View>
+            {[
+              { n: '100%', l: 'Kesiapan Baterai Handover' },
+              { n: '± 410 km', l: 'Radius Tempuh Armada' },
+              { n: '60–90 Mnt', l: 'Garansi Mobil Pengganti' },
+              { n: '24 Jam', l: 'Roadside Assistance' },
+            ].map((s) => (
+              <View key={s.l} style={[styles.statCell, isMobile && styles.statCellMobile]}>
+                <Text style={styles.statNumber}>{s.n}</Text>
+                <Text style={styles.statLabel}>{s.l}</Text>
+              </View>
+            ))}
           </View>
         </View>
       </View>
 
-      {/* SECTION ARMADA (BENCHMARK INDORENT.CO.ID) */}
-      <View style={styles.sectionWrap}>
-        {loading ? (
-          <ActivityIndicator size="large" color={COLORS.brandBlue} style={{ marginVertical: 48 }} />
-        ) : (
-          <IndorentFleetSection
-            vehicles={fleet}
-            onBookVehicle={handleBookVehicle}
-          />
-        )}
+      {/* SECTION ARMADA */}
+      <View style={styles.fleetBand}>
+        <View style={styles.sectionWrap}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#38BDF8" style={{ marginVertical: 48 }} />
+          ) : (
+            <IndorentFleetSection
+              vehicles={fleet}
+              onBookVehicle={handleBookVehicle}
+            />
+          )}
+        </View>
       </View>
 
-      {/* SECTION STANDAR KEPERCAYAAN (INDORENT BENCHMARK) */}
+      {/* SECTION STANDAR KEPERCAYAAN */}
       <View style={styles.sectionWrap}>
         <TrustBadges />
       </View>
@@ -180,9 +204,105 @@ const styles = StyleSheet.create({
   },
   hero: {
     backgroundColor: COLORS.deepInk,
-    paddingTop: 56,
-    paddingBottom: 48,
+    paddingTop: 72,
+    paddingBottom: 56,
     paddingHorizontal: 16,
+    overflow: 'hidden',
+  },
+  heroMobile: {
+    paddingTop: 36,
+    paddingBottom: 32,
+  },
+  heroGlow: {
+    position: 'absolute',
+    top: -120,
+    right: -120,
+    width: 420,
+    height: 420,
+    borderRadius: 210,
+    backgroundColor: 'rgba(11, 114, 201, 0.22)',
+  },
+  fleetBand: {
+    backgroundColor: COLORS.deepInk,
+    width: '100%',
+  },
+  priceHighlight: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    gap: 6,
+    marginBottom: 16,
+  },
+  priceHighlightFrom: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
+  },
+  priceHighlightValue: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  priceHighlightUnit: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
+  },
+  priceHighlightDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    marginHorizontal: 8,
+  },
+  priceHighlightRange: {
+    fontSize: 13,
+    color: '#7DD3FC',
+    fontWeight: '600',
+  },
+  uspRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 24,
+  },
+  uspBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  uspDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#34D399',
+  },
+  uspText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  heroBtnWa: {
+    backgroundColor: COLORS.whatsapp,
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  heroBtnWaText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  heroTitleMobile: {
+    fontSize: 30,
+    lineHeight: 38,
   },
   heroInner: {
     maxWidth: 1300,
@@ -207,10 +327,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#38BDF8',
   },
   heroTitle: {
-    fontSize: 34,
+    fontSize: 46,
     fontWeight: '900',
     color: COLORS.white,
-    lineHeight: 44,
+    lineHeight: 56,
     letterSpacing: -0.5,
     marginBottom: 16,
   },
@@ -218,11 +338,11 @@ const styles = StyleSheet.create({
     color: '#60A5FA',
   },
   heroSubtitle: {
-    fontSize: 14.5,
-    color: 'rgba(255, 255, 255, 0.75)',
-    lineHeight: 24,
-    maxWidth: 720,
-    marginBottom: 28,
+    fontSize: 15.5,
+    color: 'rgba(255, 255, 255, 0.78)',
+    lineHeight: 26,
+    maxWidth: 640,
+    marginBottom: 20,
   },
   heroActionRow: {
     flexDirection: 'row',
@@ -232,13 +352,14 @@ const styles = StyleSheet.create({
   },
   heroBtnPrimary: {
     backgroundColor: COLORS.brandBlue,
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 6,
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
   heroBtnPrimaryText: {
     color: COLORS.white,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -259,20 +380,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     backgroundColor: '#07243B',
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     marginTop: 28,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    paddingVertical: 8,
   },
-  statCol: {
+  statCell: {
     flex: 1,
-    minWidth: 140,
+    minWidth: 150,
+    paddingVertical: 14,
     paddingHorizontal: 12,
     alignItems: 'center',
+  },
+  statCellMobile: {
+    flexBasis: '50%',
+    minWidth: 0,
   },
   statNumber: {
     fontSize: 20,
@@ -287,17 +410,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'center',
   },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
+
   sectionWrap: {
     maxWidth: 1300,
     width: '100%',
     alignSelf: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 40,
+    paddingVertical: 48,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -337,8 +456,8 @@ const styles = StyleSheet.create({
   },
   stepsBox: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    padding: 36,
+    borderRadius: 16,
+    padding: 28,
     borderWidth: 1,
     borderColor: '#EDF2F7',
   },
@@ -366,10 +485,10 @@ const styles = StyleSheet.create({
   },
   stepCard: {
     flex: 1,
-    minWidth: 260,
+    minWidth: 240,
     backgroundColor: COLORS.white,
     padding: 24,
-    borderRadius: 6,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },

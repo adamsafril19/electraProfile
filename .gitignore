@@ -36,3 +36,7 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Temp scratch & images
+tmp_img/
+scratch/

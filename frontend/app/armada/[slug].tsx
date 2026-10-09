@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { COLORS } from '../../constants/colors';
 import { Vehicle } from '../../types/fleet';
@@ -9,6 +9,8 @@ import { WhatsAppModal } from '../../components/WhatsAppModal';
 export default function VehicleDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -47,7 +49,8 @@ export default function VehicleDetailScreen() {
   const currentPrice = selectedService === 'LEPAS_KUNCI' ? lepasRate?.dailyRate : driverRate?.dailyRate;
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
+    <View style={[styles.container, isMobile && { paddingBottom: 96 }]}>
       <View style={styles.inner}>
         {/* Breadcrumb Navigation */}
         <TouchableOpacity onPress={() => router.push('/armada')} style={styles.breadcrumb}>
@@ -57,7 +60,7 @@ export default function VehicleDetailScreen() {
         {/* Top Showcase: Media & Pricing Card */}
         <View style={styles.topGrid}>
           {/* Studio Media Column */}
-          <View style={styles.mediaCol}>
+          <View style={[styles.mediaCol, isMobile && { minWidth: 0, height: 240, flexBasis: '100%' }]}>
             <Image source={{ uri: vehicle.imageUrl }} style={styles.vehicleImg} resizeMode="contain" />
             <View style={styles.badgeTop}>
               <Text style={styles.badgeTopText}>{vehicle.bodyType.replace('_', ' ')}</Text>
@@ -65,7 +68,7 @@ export default function VehicleDetailScreen() {
           </View>
 
           {/* Pricing & Booking Card */}
-          <View style={styles.bookingCard}>
+          <View style={[styles.bookingCard, isMobile && { minWidth: 0, flexBasis: '100%' }]}>
             <Text style={styles.brandSubtitle}>{vehicle.brand.toUpperCase()}</Text>
             <Text style={styles.modelTitle}>{vehicle.model}</Text>
 
@@ -92,7 +95,7 @@ export default function VehicleDetailScreen() {
             </View>
 
             {/* Price Presentation */}
-            <View style={styles.priceRow}>
+            <View style={[styles.priceRow, isMobile && { flexDirection: 'column', alignItems: 'flex-start', gap: 12 }]}>
               <View>
                 <Text style={styles.priceLabel}>Tarif Sewa Harian</Text>
                 <Text style={styles.priceFigure}>
@@ -100,12 +103,14 @@ export default function VehicleDetailScreen() {
                   <Text style={styles.priceUnit}> / hari</Text>
                 </Text>
               </View>
-              <TouchableOpacity
-                style={styles.ctaBooking}
-                onPress={() => setModalVisible(true)}
-              >
-                <Text style={styles.ctaBookingText}>Reservasi WhatsApp →</Text>
-              </TouchableOpacity>
+              {!isMobile && (
+                <TouchableOpacity
+                  style={styles.ctaBooking}
+                  onPress={() => setModalVisible(true)}
+                >
+                  <Text style={styles.ctaBookingText}>Reservasi WhatsApp →</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             {selectedService === 'LEPAS_KUNCI' && lepasRate && (
@@ -202,6 +207,20 @@ export default function VehicleDetailScreen() {
         initialServiceType={selectedService}
         onClose={() => setModalVisible(false)}
       />
+    </View>
+
+    {/* Sticky Floating CTA (Mobile) */}
+    {isMobile && (
+      <View style={styles.stickyBar}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.stickyName} numberOfLines={1}>{vehicle.brand} {vehicle.model}</Text>
+          <Text style={styles.stickyPrice}>Rp {currentPrice?.toLocaleString('id-ID')} / hari</Text>
+        </View>
+        <TouchableOpacity style={styles.stickyBtn} onPress={() => setModalVisible(true)}>
+          <Text style={styles.stickyBtnText}>Booking via WhatsApp</Text>
+        </TouchableOpacity>
+      </View>
+    )}
     </View>
   );
 }
@@ -314,7 +333,8 @@ const styles = StyleSheet.create({
   },
   serviceTab: {
     flex: 1,
-    paddingVertical: 9,
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 4,
   },
@@ -361,9 +381,49 @@ const styles = StyleSheet.create({
   },
   ctaBooking: {
     backgroundColor: COLORS.brandBlue,
-    paddingVertical: 12,
+    minHeight: 48,
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    borderRadius: 6,
+    borderRadius: 8,
+  },
+  stickyBar: {
+    position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.deepInk,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.12)',
+    zIndex: 50,
+  },
+  stickyName: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  stickyPrice: {
+    color: '#7DD3FC',
+    fontSize: 12.5,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  stickyBtn: {
+    backgroundColor: COLORS.whatsapp,
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+  stickyBtnText: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '800',
   },
   ctaBookingText: {
     color: COLORS.white,

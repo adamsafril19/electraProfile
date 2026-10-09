@@ -87,7 +87,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <View style={styles.bottomBar}>
           <Text style={styles.copyrightText}>
-            © 2026 Electra Mobility Indonesia. Mengadopsi Estetika & Standar Kepercayaan INDORENT untuk Konsumen Retail.
+            © 2026 Electra Mobility Indonesia. Seluruh hak cipta dilindungi.
           </Text>
           <Text style={styles.legalSub}>
             Semua armada diasuransikan, terawat berkala, dan dilengkapi charger portable.
@@ -135,9 +135,10 @@ const styles = StyleSheet.create({
   },
   preFooterCallBtn: {
     backgroundColor: COLORS.brandBlue,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 6,
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 22,
+    borderRadius: 8,
   },
   preFooterCallBtnText: {
     color: COLORS.white,
@@ -211,7 +212,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   footerLink: {
-    marginBottom: 10,
+    minHeight: 32,
+    justifyContent: 'center',
   },
   footerLinkText: {
     fontSize: 12.5,

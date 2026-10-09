@@ -1,11 +1,20 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform, useWindowDimensions } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { COLORS } from '../constants/colors';
 
 export const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const isCompact = width < 1024;
+  const isPhone = width < 640;
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const navigate = (path: string) => {
+    setMenuOpen(false);
+    router.push(path as any);
+  };
 
   const navItems = [
     { label: 'Beranda', path: '/' },
@@ -35,9 +44,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <View style={styles.header}>
-      {/* Top Bar Call Center Banner (Inspired by INDORENT) */}
+      {/* Top Bar Call Center Banner */}
       <View style={styles.topBar}>
-        <View style={styles.topBarInner}>
+        <View style={[styles.topBarInner, isPhone && { justifyContent: 'center' }]}>
           <TouchableOpacity style={styles.callPill} onPress={handleCallCenter}>
             <View style={styles.badge247}>
               <Text style={styles.badge247Text}>24/7</Text>
@@ -48,14 +57,13 @@ export const Navbar: React.FC = () => {
             </View>
           </TouchableOpacity>
 
-          <View style={styles.topBarRight}>
-            <Text style={styles.topBarNotice}>Standar Kepercayaan Korporat untuk Pasar Retail & Wisatawan</Text>
-            <View style={styles.langPill}>
-              <Text style={styles.langActive}>ID</Text>
-              <Text style={styles.langSep}>|</Text>
-              <Text style={styles.langInactive}>EN</Text>
+          {!isPhone && (
+            <View style={styles.topBarRight}>
+              {!isCompact && (
+                <Text style={styles.topBarNotice}>Jam operasional admin 07.00 - 23.00 • Harga transparan tanpa biaya tersembunyi</Text>
+              )}
             </View>
-          </View>
+          )}
         </View>
       </View>
 
@@ -63,7 +71,7 @@ export const Navbar: React.FC = () => {
       <View style={styles.mainNav}>
         <View style={styles.mainNavInner}>
           {/* Corporate Brand Logo */}
-          <TouchableOpacity onPress={() => router.push('/')} style={styles.brandRow}>
+          <TouchableOpacity onPress={() => navigate('/')} style={styles.brandRow}>
             <View style={styles.logoMark}>
               <Text style={styles.logoMarkText}>E</Text>
             </View>
@@ -74,29 +82,63 @@ export const Navbar: React.FC = () => {
           </TouchableOpacity>
 
           {/* Desktop Navigation Links */}
-          <View style={styles.navMenu}>
+          {!isCompact && (
+            <View style={styles.navMenu}>
+              {navItems.map((item) => {
+                const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
+                return (
+                  <TouchableOpacity
+                    key={item.path}
+                    onPress={() => navigate(item.path)}
+                    style={[styles.navLink, isActive && styles.navLinkActive]}
+                  >
+                    <Text style={[styles.navText, isActive && styles.navTextActive]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+
+          <View style={styles.rightGroup}>
+            {/* WhatsApp Action Button */}
+            <TouchableOpacity style={styles.ctaWa} onPress={handleOpenWA} accessibilityLabel="Konsultasi WhatsApp">
+              <View style={styles.waDot} />
+              <Text style={styles.ctaWaText}>{isPhone ? 'WhatsApp' : 'Konsultasi WhatsApp'}</Text>
+            </TouchableOpacity>
+
+            {isCompact && (
+              <TouchableOpacity
+                style={styles.menuBtn}
+                onPress={() => setMenuOpen((o) => !o)}
+                accessibilityLabel={menuOpen ? 'Tutup menu' : 'Buka menu'}
+              >
+                <View style={[styles.menuBar, menuOpen && styles.menuBarTopOpen]} />
+                <View style={[styles.menuBar, menuOpen && styles.menuBarMidOpen]} />
+                <View style={[styles.menuBar, menuOpen && styles.menuBarBotOpen]} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Mobile Dropdown Menu */}
+        {isCompact && menuOpen && (
+          <View style={styles.mobileMenu}>
             {navItems.map((item) => {
-              const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+              const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
               return (
                 <TouchableOpacity
                   key={item.path}
-                  onPress={() => router.push(item.path as any)}
-                  style={[styles.navLink, isActive && styles.navLinkActive]}
+                  onPress={() => navigate(item.path)}
+                  style={[styles.mobileLink, isActive && styles.mobileLinkActive]}
                 >
-                  <Text style={[styles.navText, isActive && styles.navTextActive]}>
-                    {item.label}
-                  </Text>
+                  <Text style={[styles.mobileLinkText, isActive && styles.navTextActive]}>{item.label}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
-
-          {/* WhatsApp Action Button */}
-          <TouchableOpacity style={styles.ctaWa} onPress={handleOpenWA}>
-            <View style={styles.waDot} />
-            <Text style={styles.ctaWaText}>Konsultasi WhatsApp</Text>
-          </TouchableOpacity>
-        </View>
+        )}
       </View>
     </View>
   );
@@ -242,7 +284,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   navLink: {
-    paddingVertical: 6,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 6,
   },
@@ -259,13 +301,66 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '700',
   },
+  rightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  menuBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  menuBar: {
+    width: 20,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: COLORS.white,
+  },
+  menuBarTopOpen: {
+    transform: [{ translateY: 6 }, { rotate: '45deg' }],
+  },
+  menuBarMidOpen: {
+    opacity: 0,
+  },
+  menuBarBotOpen: {
+    transform: [{ translateY: -6 }, { rotate: '-45deg' }],
+  },
+  mobileMenu: {
+    maxWidth: 1300,
+    width: '100%',
+    alignSelf: 'center',
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    paddingTop: 8,
+  },
+  mobileLink: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  mobileLinkActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.09)',
+  },
+  mobileLinkText: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.85)',
+  },
   ctaWa: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.whatsapp,
+    minHeight: 48,
     paddingVertical: 9,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 24,
     gap: 8,
   },
   waDot: {
