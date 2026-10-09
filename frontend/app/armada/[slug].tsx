@@ -61,7 +61,14 @@ export default function VehicleDetailScreen() {
         <View style={styles.topGrid}>
           {/* Studio Media Column */}
           <View style={[styles.mediaCol, isMobile && { minWidth: 0, height: 240, flexBasis: '100%' }]}>
-            <Image source={{ uri: vehicle.imageUrl }} style={styles.vehicleImg} resizeMode="contain" />
+            <Image
+              source={{ uri: vehicle.imageUrl }}
+              style={[
+                styles.vehicleImg,
+                vehicle.slug === 'byd-atto-3-superior' && { transform: [{ scale: 1.35 }] }
+              ]}
+              resizeMode="contain"
+            />
             <View style={styles.badgeTop}>
               <Text style={styles.badgeTopText}>{vehicle.bodyType.replace('_', ' ')}</Text>
             </View>

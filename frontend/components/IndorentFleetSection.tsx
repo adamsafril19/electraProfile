@@ -238,7 +238,11 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
               >
                 <Image
                   source={{ uri: currentVehicle.imageUrl }}
-                  style={[styles.stageCarImage, isMobile && styles.stageCarImageMobile]}
+                  style={[
+                    styles.stageCarImage,
+                    isMobile && styles.stageCarImageMobile,
+                    currentVehicle.slug === 'byd-atto-3-superior' && styles.stageCarImageAtto3
+                  ]}
                   resizeMode="contain"
                 />
               </TouchableOpacity>
@@ -336,7 +340,11 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
                   >
                     <Image
                       source={{ uri: vehicle.imageUrl }}
-                      style={[styles.railThumbImage, isSelected && styles.railThumbImageSelected]}
+                      style={[
+                        styles.railThumbImage,
+                        isSelected && styles.railThumbImageSelected,
+                        vehicle.slug === 'byd-atto-3-superior' && { transform: [{ scale: 1.35 }] }
+                      ]}
                       resizeMode="contain"
                     />
                     <Text
@@ -607,6 +615,9 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 220,
     maxWidth: 620
+  },
+  stageCarImageAtto3: {
+    transform: [{ scale: 1.45 }],
   },
 
   // Bottom Bar Overlay
