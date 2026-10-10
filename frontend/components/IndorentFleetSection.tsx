@@ -249,7 +249,7 @@ export const IndorentFleetSection: React.FC<IndorentFleetSectionProps> = ({
 
             {/* Stage Bottom Bar Overlay (Title, Price & Controls) */}
             <View style={[styles.stageBottomBar, isMobile && styles.stageBottomBarMobile]}>
-              <View style={[styles.stageCarInfo, isMobile && { minWidth: 0 }]}>
+              <View style={[styles.stageCarInfo, isMobile && { minWidth: 0, maxWidth: '100%', overflow: 'hidden' }]}>
                 <Text style={styles.stageCategoryEyebrow}>
                   {getCategoryLabel(currentVehicle.bodyType)}
                 </Text>

@@ -8,6 +8,8 @@ import { OfflineBanner } from '../components/OfflineBanner';
 import { VehicleCard } from '../components/VehicleCard';
 import { IndorentFleetSection } from '../components/IndorentFleetSection';
 import { QuickBookingWidget } from '../components/QuickBookingWidget';
+import { HeroCar } from '../components/HeroCar';
+import { FadeIn } from '../components/FadeIn';
 import { TrustBadges } from '../components/TrustBadges';
 import { WhatsAppModal } from '../components/WhatsAppModal';
 import { todayStr } from '../utils/date';
@@ -16,10 +18,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
+  const isDesktop = width >= 1100;
   const [fleet, setFleet] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [heroVehicleId, setHeroVehicleId] = useState<string | undefined>(undefined);
   const DEFAULT_BOOKING_CONTEXT = {
     serviceType: 'LEPAS_KUNCI' as 'LEPAS_KUNCI' | 'DENGAN_DRIVER',
     durationDays: 3,
@@ -80,55 +84,84 @@ export default function HomeScreen() {
     setModalVisible(true);
   };
 
+  const heroVehicle = fleet.find((f) => f.id === heroVehicleId) || fleet[0];
+
+  const UspRow: React.FC<{ style?: any }> = ({ style }) => (
+    <View style={[styles.uspRow, style]}>
+      {['Baterai Siap Pakai 100%', 'Bebas Ganjil-Genap', 'Unit Pengganti 24 Jam'].map((label) => (
+        <View key={label} style={styles.uspBadge}>
+          <View style={styles.uspDot} />
+          <Text style={styles.uspText}>{label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* HERO SECTION */}
       <View style={[styles.hero, isMobile && styles.heroMobile]}>
         <View style={styles.heroGlow} pointerEvents="none" />
+        <View style={styles.heroGlow2} pointerEvents="none" />
         <View style={styles.heroInner}>
-          <View style={styles.eyebrowRow}>
-            <Text style={styles.eyebrowText}>RENTAL MOBIL LISTRIK MANDIRI</Text>
-            <View style={styles.eyebrowLine} />
+          <View style={isDesktop ? styles.heroRow : undefined}>
+            {/* Kolom kiri: pesan utama */}
+            <View style={isDesktop ? styles.heroLeft : undefined}>
+              <FadeIn>
+                <View style={styles.eyebrowRow}>
+                  <Text style={styles.eyebrowText}>RENTAL MOBIL LISTRIK MANDIRI</Text>
+                  <View style={styles.eyebrowLine} />
+                </View>
+
+                <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile, isDesktop && styles.heroTitleDesktop]}>
+                  Rental Mobil Listrik{'\n'}
+                  <Text style={styles.heroTitleAccent}>Lepas Kunci & Driver</Text>
+                </Text>
+
+                <Text style={styles.heroSubtitle}>
+                  Tarif transparan, baterai siap pakai, dan perlindungan darurat 24 jam. Pilih unit, kirim reservasi ke WhatsApp dalam satu klik.
+                </Text>
+
+                {/* Price + range validation (5-10 second rule) */}
+                <View style={styles.priceHighlight}>
+                  <Text style={styles.priceHighlightFrom}>Mulai</Text>
+                  <Text style={styles.priceHighlightValue}>Rp350.000</Text>
+                  <Text style={styles.priceHighlightUnit}>/hari</Text>
+                  {!isMobile && <View style={styles.priceHighlightDivider} />}
+                  <Text style={[styles.priceHighlightRange, isMobile && { width: '100%' }]}>
+                    Baterai penuh ± 300–410 km • Termasuk Portable Charger
+                  </Text>
+                </View>
+
+                <View style={styles.heroActionRow}>
+                  <TouchableOpacity style={styles.heroBtnPrimary} onPress={() => router.push('/armada')} accessibilityRole="link">
+                    <Text style={styles.heroBtnPrimaryText}>Lihat Armada</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.heroBtnWa} onPress={handleConsultWA} accessibilityRole="link">
+                    <Text style={styles.heroBtnWaText}>Konsultasi Cepat (WA)</Text>
+                  </TouchableOpacity>
+                </View>
+              </FadeIn>
+
+              {/* Foto unit terpilih (tablet & desktop) */}
+              {!isMobile && (
+                <FadeIn delay={200}>
+                  <HeroCar vehicle={heroVehicle} />
+                </FadeIn>
+              )}
+
+              {isDesktop && <UspRow />}
+            </View>
+
+            {/* Kolom kanan: form pemesanan, langsung terlihat tanpa menggulir */}
+            <View style={isDesktop ? styles.heroRight : { marginTop: isMobile ? 4 : 8 }}>
+              <FadeIn delay={120} distance={22}>
+                <QuickBookingWidget vehicles={fleet} onQuickBook={handleQuickBook} embedded={isDesktop} onVehicleChange={setHeroVehicleId} />
+              </FadeIn>
+            </View>
           </View>
 
-          <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
-            Rental Mobil Listrik{'\n'}
-            <Text style={styles.heroTitleAccent}>Lepas Kunci & Driver</Text>
-          </Text>
-
-          <Text style={styles.heroSubtitle}>
-            Tarif transparan, baterai siap pakai, dan perlindungan darurat 24 jam. Pilih unit, kirim reservasi ke WhatsApp dalam satu klik.
-          </Text>
-
-          {/* Price + range validation (5-10 second rule) */}
-          <View style={styles.priceHighlight}>
-            <Text style={styles.priceHighlightFrom}>Mulai</Text>
-            <Text style={styles.priceHighlightValue}>Rp350.000</Text>
-            <Text style={styles.priceHighlightUnit}>/hari</Text>
-            <View style={styles.priceHighlightDivider} />
-            <Text style={styles.priceHighlightRange}>Baterai penuh ± 300–410 km • Termasuk Portable Charger</Text>
-          </View>
-
-          <View style={styles.uspRow}>
-            {['Baterai Siap Pakai 100%', 'Bebas Ganjil-Genap', 'Unit Pengganti 24 Jam'].map((label) => (
-              <View key={label} style={styles.uspBadge}>
-                <View style={styles.uspDot} />
-                <Text style={styles.uspText}>{label}</Text>
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.heroActionRow}>
-            <TouchableOpacity style={styles.heroBtnPrimary} onPress={() => router.push('/armada')}>
-              <Text style={styles.heroBtnPrimaryText}>Lihat Armada</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.heroBtnWa} onPress={handleConsultWA}>
-              <Text style={styles.heroBtnWaText}>Konsultasi Cepat (WA)</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Quick Booking Reservation Widget */}
-          <QuickBookingWidget vehicles={fleet} onQuickBook={handleQuickBook} />
+          {!isDesktop && <UspRow style={{ marginTop: 20, marginBottom: 0 }} />}
 
           {/* Stats Banner */}
           <View style={styles.statsBar}>
@@ -222,7 +255,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     backgroundColor: COLORS.deepInk,
-    paddingTop: 72,
+    paddingTop: 56,
     paddingBottom: 56,
     paddingHorizontal: 16,
     overflow: 'hidden',
@@ -239,6 +272,32 @@ const styles = StyleSheet.create({
     height: 420,
     borderRadius: 210,
     backgroundColor: 'rgba(11, 114, 201, 0.22)',
+  },
+  heroGlow2: {
+    position: 'absolute',
+    bottom: -160,
+    left: -140,
+    width: 380,
+    height: 380,
+    borderRadius: 190,
+    backgroundColor: 'rgba(14, 165, 233, 0.08)',
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 40,
+  },
+  heroLeft: {
+    flex: 1,
+    minWidth: 0,
+  },
+  heroRight: {
+    width: 500,
+    flexShrink: 0,
+  },
+  heroTitleDesktop: {
+    fontSize: 52,
+    lineHeight: 62,
   },
   fleetBand: {
     backgroundColor: COLORS.deepInk,

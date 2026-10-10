@@ -1,6 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'react-native';
+import Head from 'expo-router/head';
+import { MessageCircle, Phone, Siren, Truck } from 'lucide-react-native';
 import { COLORS } from '../constants/colors';
+import { ContentWrap, InfoSection, PageHero, Paragraph, StepList } from '../components/ContentKit';
+import { FadeIn } from '../components/FadeIn';
 
 export default function EmergencyScreen() {
   const handleCallHotline = () => {
@@ -23,236 +27,86 @@ export default function EmergencyScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerInner}>
-          <View style={styles.eyebrowRow}>
-            <Text style={styles.eyebrowText}>LAYANAN DARURAT & JAMINAN KELANGSUNGAN PERJALANAN</Text>
-            <View style={styles.eyebrowLine} />
-          </View>
-          <Text style={styles.title}>Roadside Assistance & Mobil Pengganti 24 Jam</Text>
-          <Text style={styles.subtitle}>
-            Komitmen kami mendampingi perjalanan Anda tanpa henti. Ketenangan pikiran Anda adalah prioritas utama standar operasional kami.
-          </Text>
-        </View>
-      </View>
+      <Head>
+        <title>Layanan Darurat 24 Jam & Mobil Pengganti | Electra</title>
+        <meta name="description" content="Hotline darurat 24 jam, derek gratis, dan garansi mobil pengganti 60-90 menit untuk penyewa mobil listrik Electra." />
+      </Head>
 
-      <View style={styles.content}>
-        {/* Hotline Dispatch Box */}
-        <View style={styles.dispatchCard}>
-          <View style={styles.dispatchTopBadge}>
-            <Text style={styles.dispatchTopBadgeText}>HOTLINE RESMI 24/7</Text>
-          </View>
-          <Text style={styles.dispatchTitle}>Emergency Dispatch Call Center</Text>
-          <Text style={styles.dispatchPhone}>0812-3456-7890</Text>
-          <Text style={styles.dispatchDesc}>
-            Siaga 24 jam nonstop untuk evakuasi armada, layanan derek resmi, jumper baterai 12V pendukung, dan penanganan kendala teknis di jalan.
-          </Text>
-          <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.btnCall} onPress={handleCallHotline}>
-              <Text style={styles.btnCallText}>Hubungi Hotline Darurat Sekarang</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btnWa} onPress={handleOpenEmergencyWA}>
-              <Text style={styles.btnWaText}>Chat Dispatcher via WhatsApp</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <PageHero
+        eyebrow="LAYANAN DARURAT & JAMINAN KELANGSUNGAN PERJALANAN"
+        title="Roadside Assistance & Mobil Pengganti 24 Jam"
+        subtitle="Komitmen kami mendampingi perjalanan Anda tanpa henti. Ketenangan pikiran Anda adalah prioritas utama standar operasional kami."
+        icon={Siren}
+        accent="#F87171"
+      />
 
-        {/* Replacement Vehicle Guarantee (INDORENT Benchmark) */}
-        <View style={styles.guaranteeCard}>
-          <View style={styles.cardTagRow}>
-            <Text style={styles.cardTag}>STANDAR SLA</Text>
-            <Text style={styles.cardHeaderSmall}>JAMINAN KENDARAAN PENGGANTI</Text>
+      <ContentWrap>
+        {/* Kartu hotline: elemen terpenting halaman ini */}
+        <FadeIn>
+          <View style={styles.dispatchCard}>
+            <View style={styles.dispatchTopBadge}>
+              <View style={styles.liveDot} />
+              <Text style={styles.dispatchTopBadgeText}>HOTLINE RESMI 24/7</Text>
+            </View>
+            <Text style={styles.dispatchTitle}>Emergency Dispatch Call Center</Text>
+            <Text style={styles.dispatchPhone} selectable>
+              0812-3456-7890
+            </Text>
+            <Text style={styles.dispatchDesc}>
+              Siaga 24 jam nonstop untuk evakuasi armada, layanan derek resmi, jumper baterai 12V pendukung, dan penanganan kendala teknis di jalan.
+            </Text>
+            <View style={styles.btnRow}>
+              <TouchableOpacity style={styles.btnCall} onPress={handleCallHotline} accessibilityRole="link">
+                <Phone size={19} color={COLORS.white} />
+                <Text style={styles.btnCallText}>Hubungi Hotline Darurat Sekarang</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.btnWa} onPress={handleOpenEmergencyWA} accessibilityRole="link">
+                <MessageCircle size={19} color={COLORS.white} />
+                <Text style={styles.btnWaText}>Chat Dispatcher via WhatsApp</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={styles.guaranteeTitle}>Garansi Pengiriman Mobil Pengganti (Replacement Car)</Text>
-          <Text style={styles.guaranteeDesc}>
-            Apabila unit kendaraan mengalami malfungsi teknis pada sistem kelistrikan murni (bukan akibat kelalaian pemakaian penyewa):
-          </Text>
-          <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>
-              1. **SLA Pengiriman 60–90 Menit**: Unit pengganti segera dikirimkan ke titik lokasi Anda dalam wilayah jangkauan perkotaan.
-            </Text>
-            <Text style={styles.bulletItem}>
-              2. **Spesifikasi Kendaraan Setara**: Kami mengutamakan unit mobil listrik setara, atau alternatif kendaraan bensin premium jika seluruh unit EV sedang terisi.
-            </Text>
-            <Text style={styles.bulletItem}>
-              3. **Bebas Biaya Evakuasi**: Seluruh beban biaya mobil derek (*towing*) ditanggung sepenuhnya oleh pihak rental.
-            </Text>
-          </View>
-        </View>
-      </View>
+        </FadeIn>
+
+        <InfoSection tag="STANDAR SLA" kicker="JAMINAN KENDARAAN PENGGANTI" title="Garansi Pengiriman Mobil Pengganti (Replacement Car)" icon={Truck} tone="red" delay={100}>
+          <Paragraph>Apabila unit kendaraan mengalami malfungsi teknis pada sistem kelistrikan murni (bukan akibat kelalaian pemakaian penyewa):</Paragraph>
+          <StepList
+            items={[
+              '**SLA Pengiriman 60–90 Menit**: Unit pengganti segera dikirimkan ke titik lokasi Anda dalam wilayah jangkauan perkotaan.',
+              '**Spesifikasi Kendaraan Setara**: Kami mengutamakan unit mobil listrik setara, atau alternatif kendaraan bensin premium jika seluruh unit EV sedang terisi.',
+              '**Bebas Biaya Evakuasi**: Seluruh beban biaya mobil derek (*towing*) ditanggung sepenuhnya oleh pihak rental.',
+            ]}
+          />
+        </InfoSection>
+      </ContentWrap>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    backgroundColor: COLORS.deepInk,
-    paddingTop: 48,
-    paddingBottom: 36,
-    paddingHorizontal: 16,
-  },
-  headerInner: {
-    maxWidth: 1000,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  eyebrowRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  eyebrowText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#F87171',
-    letterSpacing: 1.5,
-  },
-  eyebrowLine: {
-    width: 36,
-    height: 1.5,
-    backgroundColor: '#F87171',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: COLORS.white,
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 13.5,
-    color: 'rgba(255, 255, 255, 0.7)',
-    maxWidth: 720,
-    lineHeight: 22,
-  },
-  content: {
-    maxWidth: 1000,
-    width: '100%',
-    alignSelf: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 40,
-    gap: 24,
-  },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
   dispatchCard: {
     backgroundColor: '#FEF2F2',
     borderWidth: 1,
     borderColor: '#FCA5A5',
-    borderRadius: 8,
-    padding: 32,
+    borderRadius: 18,
+    padding: 24,
     alignItems: 'center',
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 28,
+    elevation: 3,
   },
-  dispatchTopBadge: {
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginBottom: 12,
-  },
-  dispatchTopBadgeText: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  dispatchTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#991B1B',
-    marginBottom: 4,
-  },
-  dispatchPhone: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#DC2626',
-    letterSpacing: 0.5,
-    marginVertical: 10,
-  },
-  dispatchDesc: {
-    fontSize: 13,
-    color: '#7F1D1D',
-    textAlign: 'center',
-    maxWidth: 580,
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  btnRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
-  },
-  btnCall: {
-    backgroundColor: '#DC2626',
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 6,
-  },
-  btnCallText: {
-    color: COLORS.white,
-    fontWeight: '800',
-    fontSize: 13,
-    letterSpacing: 0.3,
-  },
-  btnWa: {
-    backgroundColor: COLORS.whatsapp,
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 6,
-  },
-  btnWaText: {
-    color: COLORS.white,
-    fontWeight: '800',
-    fontSize: 13,
-    letterSpacing: 0.3,
-  },
-  guaranteeCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    padding: 28,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  cardTagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
-  },
-  cardTag: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.brandBlue,
-    letterSpacing: 1,
-  },
-  cardHeaderSmall: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
-    letterSpacing: 0.8,
-  },
-  guaranteeTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.deepInk,
-    marginBottom: 10,
-  },
-  guaranteeDesc: {
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 22,
-    marginBottom: 14,
-  },
-  bulletList: {
-    gap: 10,
-  },
-  bulletItem: {
-    fontSize: 13,
-    color: '#334155',
-    lineHeight: 21,
-  },
+  dispatchTopBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#DC2626', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, marginBottom: 14 },
+  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FECACA' },
+  dispatchTopBadgeText: { color: COLORS.white, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  dispatchTitle: { fontSize: 19, fontWeight: '800', color: '#991B1B', marginBottom: 4, textAlign: 'center' },
+  dispatchPhone: { fontSize: 42, fontWeight: '900', color: '#DC2626', letterSpacing: 0.5, marginVertical: 8, textAlign: 'center' },
+  dispatchDesc: { fontSize: 15, color: '#7F1D1D', textAlign: 'center', maxWidth: 600, marginBottom: 24, lineHeight: 24 },
+  btnRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', alignSelf: 'stretch' },
+  btnCall: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, backgroundColor: '#DC2626', paddingHorizontal: 24, borderRadius: 12, flexShrink: 1, maxWidth: '100%', justifyContent: 'center' },
+  btnCallText: { color: COLORS.white, fontWeight: '800', fontSize: 14.5, flexShrink: 1, textAlign: 'center' },
+  btnWa: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, backgroundColor: COLORS.whatsapp, paddingHorizontal: 24, borderRadius: 12, flexShrink: 1, maxWidth: '100%', justifyContent: 'center' },
+  btnWaText: { color: COLORS.white, fontWeight: '800', fontSize: 14.5, flexShrink: 1, textAlign: 'center' },
 });

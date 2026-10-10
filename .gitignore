@@ -40,3 +40,6 @@ Thumbs.db
 # Temp scratch & images
 tmp_img/
 scratch/
+
+# Data operasional lokal (JSON store)
+backend/data/

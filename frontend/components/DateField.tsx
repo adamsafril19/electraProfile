@@ -57,7 +57,7 @@ export const DateField: React.FC<DateFieldProps> = ({ value, onChange, error, la
             fontSize: 13,
             backgroundColor: '#F8FAFC',
             color: COLORS.textInk,
-            fontFamily: 'inherit',
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
             boxSizing: 'border-box',
             width: '100%',
           },

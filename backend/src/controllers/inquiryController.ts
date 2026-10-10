@@ -30,9 +30,11 @@ export class InquiryController {
         });
       }
 
+      // Endpoint publik: kode reservasi berurutan sehingga mudah ditebak, jadi data pribadi tidak boleh ikut keluar
+      const { customerName, customerPhone, customerNotes, whatsappRedirectUrl, ...publicData } = inquiry;
       return res.status(200).json({
         success: true,
-        data: inquiry
+        data: publicData
       });
     } catch (error) {
       next(error);

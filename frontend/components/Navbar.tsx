@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable, StyleSheet, Linking, Platform, useWindowDimensions } from 'react-native';
+import { MessageCircle } from 'lucide-react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { COLORS } from '../constants/colors';
 
@@ -55,7 +56,7 @@ export const Navbar: React.FC = () => {
               </View>
               <View>
                 <Text style={styles.brandName}>ELECTRA</Text>
-                <Text style={styles.brandTagline}>ELECTRIC VEHICLE RENTAL</Text>
+                {!isPhone && <Text style={styles.brandTagline}>ELECTRIC VEHICLE RENTAL</Text>}
               </View>
             </TouchableOpacity>
 
@@ -80,15 +81,17 @@ export const Navbar: React.FC = () => {
               {navItems.map((item) => {
                 const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={item.path}
                     onPress={() => navigate(item.path)}
-                    style={[styles.navLink, isActive && styles.navLinkActive]}
+                    accessibilityRole="link"
+                    style={({ hovered }: any) => [styles.navLink, isActive && styles.navLinkActive, hovered && !isActive && styles.navLinkHover]}
                   >
                     <Text style={[styles.navText, isActive && styles.navTextActive]}>
                       {item.label}
                     </Text>
-                  </TouchableOpacity>
+                    {isActive && <View style={styles.navUnderline} />}
+                  </Pressable>
                 );
               })}
             </View>
@@ -96,9 +99,20 @@ export const Navbar: React.FC = () => {
 
           <View style={styles.rightGroup}>
             {/* WhatsApp Action Button */}
-            <TouchableOpacity style={styles.ctaWa} onPress={handleOpenWA} accessibilityLabel="Konsultasi WhatsApp">
-              <View style={styles.waDot} />
-              <Text style={styles.ctaWaText}>{isPhone ? 'WhatsApp' : 'Konsultasi WhatsApp'}</Text>
+            <TouchableOpacity
+              style={[styles.ctaWa, isPhone && styles.ctaWaIcon]}
+              onPress={handleOpenWA}
+              accessibilityRole="link"
+              accessibilityLabel="Konsultasi WhatsApp"
+            >
+              {isPhone ? (
+                <MessageCircle size={22} color={COLORS.white} />
+              ) : (
+                <>
+                  <View style={styles.waDot} />
+                  <Text style={styles.ctaWaText}>Konsultasi WhatsApp</Text>
+                </>
+              )}
             </TouchableOpacity>
 
             {isCompact && (
@@ -268,6 +282,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 6,
+    position: 'relative',
+    ...(Platform.OS === 'web' ? ({ transitionProperty: 'background-color', transitionDuration: '150ms', cursor: 'pointer' } as any) : null),
+  },
+  navLinkHover: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  navUnderline: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 2,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: '#38BDF8',
   },
   navLinkActive: {
     backgroundColor: 'rgba(255, 255, 255, 0.09)',
@@ -343,6 +371,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 24,
     gap: 8,
+  },
+  ctaWaIcon: {
+    width: 48,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    justifyContent: 'center',
+    borderRadius: 24,
   },
   waDot: {
     width: 7,

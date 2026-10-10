@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, useWindowDimensions } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Vehicle } from '../types/fleet';
@@ -9,6 +9,10 @@ import { getDateError, todayStr } from '../utils/date';
 
 interface QuickBookingWidgetProps {
   vehicles: Vehicle[];
+  // true = dipasang di kolom hero (lebar mengikuti kolom, tanpa margin atas)
+  embedded?: boolean;
+  // Dipanggil saat pengunjung memilih model lain (dipakai hero untuk mengganti foto unit)
+  onVehicleChange?: (vehicleId: string) => void;
   onQuickBook: (params: {
     vehicleId: string;
     serviceType: 'LEPAS_KUNCI' | 'DENGAN_DRIVER';
@@ -18,7 +22,7 @@ interface QuickBookingWidgetProps {
   }) => void;
 }
 
-export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles, onQuickBook }) => {
+export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles, onQuickBook, embedded, onVehicleChange }) => {
   const { width } = useWindowDimensions();
   const isNarrow = width < 480;
   const [serviceType, setServiceType] = useState<'LEPAS_KUNCI' | 'DENGAN_DRIVER'>('LEPAS_KUNCI');
@@ -27,6 +31,16 @@ export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles
   const [pickupLocation, setPickupLocation] = useState<string>('Bandara I Gusti Ngurah Rai (Kedatangan)');
   const [startDate, setStartDate] = useState<string>(todayStr());
   const [dateError, setDateError] = useState<string | null>(null);
+
+  // Tetap sinkron saat data armada baru selesai dimuat
+  useEffect(() => {
+    if (!selectedVehicleId && vehicles[0]) setSelectedVehicleId(vehicles[0].id);
+  }, [vehicles, selectedVehicleId]);
+
+  useEffect(() => {
+    if (selectedVehicleId) onVehicleChange?.(selectedVehicleId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVehicleId]);
 
   const handleSubmit = () => {
     const err = getDateError(startDate);
@@ -42,7 +56,7 @@ export const QuickBookingWidget: React.FC<QuickBookingWidgetProps> = ({ vehicles
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, embedded && styles.containerEmbedded]}>
       {/* Service Type Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity
@@ -142,6 +156,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     overflow: 'hidden',
     marginTop: 24,
+  },
+  containerEmbedded: {
+    maxWidth: undefined,
+    marginTop: 0,
   },
   tabBar: {
     flexDirection: 'row',

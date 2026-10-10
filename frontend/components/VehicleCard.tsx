@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { BatteryCharging, Gauge, PlugZap, Users } from 'lucide-react-native';
 import { Vehicle } from '../types/fleet';
 import { COLORS } from '../constants/colors';
 
@@ -9,29 +10,47 @@ interface VehicleCardProps {
   onBookNow: (vehicle: Vehicle) => void;
 }
 
+const formatCategory = (type: string) => {
+  switch (type) {
+    case 'CITY_CAR':
+      return 'City Car';
+    case 'COMPACT_SUV':
+      return 'Compact SUV';
+    case 'MPV':
+      return 'Family MPV (7-Seat)';
+    default:
+      return type;
+  }
+};
+
+const webTransition = Platform.OS === 'web' ? ({ transitionProperty: 'transform, box-shadow, border-color', transitionDuration: '220ms', cursor: 'pointer' } as any) : null;
+const webImageTransition = Platform.OS === 'web' ? ({ transitionProperty: 'transform', transitionDuration: '350ms' } as any) : null;
+
 export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) => {
   const router = useRouter();
+  const [hovered, setHovered] = useState(false);
 
-  const lepasRate = vehicle.rates.find(r => r.serviceType === 'LEPAS_KUNCI');
-  const driverRate = vehicle.rates.find(r => r.serviceType === 'DENGAN_DRIVER');
-
-  const formatCategory = (type: string) => {
-    switch (type) {
-      case 'CITY_CAR': return 'City Car';
-      case 'COMPACT_SUV': return 'Compact SUV';
-      case 'MPV': return 'Family MPV (7-Seat)';
-      default: return type;
-    }
-  };
+  const lepasRate = vehicle.rates.find((r) => r.serviceType === 'LEPAS_KUNCI');
+  const driverRate = vehicle.rates.find((r) => r.serviceType === 'DENGAN_DRIVER');
+  const goDetail = () => router.push(`/armada/${vehicle.slug}` as any);
 
   return (
-    <View style={styles.card}>
-      {/* Studio Header & Image Container */}
+    // Seluruh kartu bisa diketuk ke halaman detail; tombol di dalamnya tetap punya aksi sendiri
+    <Pressable
+      accessible={false}
+      focusable={false}
+      onPress={goDetail}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={[styles.card, webTransition, hovered && styles.cardHover]}
+    >
+      {/* Foto unit */}
       <View style={styles.mediaContainer}>
         <Image
           source={{ uri: vehicle.imageUrl }}
-          style={styles.vehicleImage}
+          style={[styles.vehicleImage, webImageTransition, hovered && { transform: [{ scale: 1.05 }] }]}
           resizeMode="contain"
+          accessibilityLabel={`${vehicle.brand} ${vehicle.model}`}
         />
         <View style={styles.categoryBadge}>
           <Text style={styles.categoryBadgeText}>{formatCategory(vehicle.bodyType)}</Text>
@@ -43,43 +62,34 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) 
         )}
       </View>
 
-      {/* Vehicle Info */}
       <View style={styles.body}>
         <View style={styles.titleBlock}>
           <Text style={styles.brandSubtitle}>{vehicle.brand.toUpperCase()}</Text>
-          <Text style={styles.modelTitle}>{vehicle.model}</Text>
-        </View>
-
-        {/* Technical Specs Matrix (Clean Corporate Layout) */}
-        <View style={styles.specsMatrix}>
-          <View style={styles.specColumn}>
-            <Text style={styles.specKey}>JARAK TEMPUH</Text>
-            <Text style={styles.specVal}>± {vehicle.specs.rangeCltcKm} km</Text>
-          </View>
-          <View style={styles.specDivider} />
-          <View style={styles.specColumn}>
-            <Text style={styles.specKey}>TIPE PORT</Text>
-            <Text style={styles.specVal}>{vehicle.specs.portType}</Text>
-          </View>
-          <View style={styles.specDivider} />
-          <View style={styles.specColumn}>
-            <Text style={styles.specKey}>KAPASITAS</Text>
-            <Text style={styles.specVal}>{vehicle.specs.seatingCapacity} Kursi</Text>
-          </View>
-        </View>
-
-        {/* Guaranteed Equipment Banner */}
-        <View style={styles.equipmentBanner}>
-          <View style={styles.checkDot} />
-          <Text style={styles.equipmentText}>
-            Termasuk Portable Charger 2.2 kW & Kabel Grounding
+          <Text style={styles.modelTitle} numberOfLines={2}>
+            {vehicle.model}
           </Text>
         </View>
 
-        {/* Pricing Architecture (INDORENT Transparent Retail) */}
+        {/* Spesifikasi utama, satu baris dengan ikon */}
+        <View style={styles.specsMatrix}>
+          <Spec icon={Gauge} value={`${vehicle.specs.rangeCltcKm} km`} label="Jarak" />
+          <View style={styles.specDivider} />
+          <Spec icon={BatteryCharging} value={`${vehicle.specs.batteryCapacityKwh} kWh`} label="Baterai" />
+          <View style={styles.specDivider} />
+          <Spec icon={Users} value={`${vehicle.specs.seatingCapacity}`} label="Kursi" />
+          <View style={styles.specDivider} />
+          <Spec icon={PlugZap} value={String(vehicle.specs.portType).replace('_', '/')} label="Port" />
+        </View>
+
+        <View style={styles.equipmentBanner}>
+          <View style={styles.checkDot} />
+          <Text style={styles.equipmentText}>Termasuk Portable Charger 2.2 kW & kabel grounding</Text>
+        </View>
+
+        {/* Harga */}
         <View style={styles.pricingSection}>
           <View>
-            <Text style={styles.pricingLabel}>Mulai dari (Lepas Kunci 24 Jam):</Text>
+            <Text style={styles.pricingLabel}>Lepas kunci • 24 jam</Text>
             <Text style={styles.priceFigure}>
               Rp {lepasRate?.dailyRate.toLocaleString('id-ID')}
               <Text style={styles.priceUnit}> / hari</Text>
@@ -87,36 +97,39 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) 
           </View>
           {driverRate && (
             <View style={styles.driverSubInfo}>
-              <Text style={styles.driverSubLabel}>Dengan Sopir:</Text>
+              <Text style={styles.driverSubLabel}>Dengan sopir</Text>
               <Text style={styles.driverSubPrice}>Rp {driverRate.dailyRate.toLocaleString('id-ID')}/hari</Text>
             </View>
           )}
         </View>
 
-        {/* Corporate Actions */}
         <View style={styles.actionGrid}>
-          <TouchableOpacity
-            style={styles.btnOutline}
-            onPress={() => router.push(`/armada/${vehicle.slug}` as any)}
-          >
+          <TouchableOpacity style={styles.btnOutline} onPress={goDetail} accessibilityRole="link">
             <Text style={styles.btnOutlineText}>Detail Unit</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.btnPrimary}
-            onPress={() => onBookNow(vehicle)}
-          >
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => onBookNow(vehicle)} accessibilityRole="button">
             <Text style={styles.btnPrimaryText}>Reservasi WA →</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
+
+const Spec: React.FC<{ icon: React.ComponentType<any>; value: string; label: string }> = ({ icon: Icon, value, label }) => (
+  <View style={styles.specColumn}>
+    <Icon size={16} color={COLORS.brandBlue} />
+    <Text style={styles.specVal} numberOfLines={1}>
+      {value}
+    </Text>
+    <Text style={styles.specKey}>{label}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     overflow: 'hidden',
@@ -128,14 +141,21 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     elevation: 3,
   },
+  cardHover: {
+    borderColor: '#93C5FD',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.16,
+    shadowRadius: 30,
+    transform: [{ translateY: -5 }],
+  },
   mediaContainer: {
-    width: '100%',
-    height: 200,
-    backgroundColor: '#F8FAFC',
-    position: 'relative',
-    justifyContent: 'center',
+    height: 210,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 16,
+    overflow: 'hidden',
+    position: 'relative',
   },
   vehicleImage: {
     width: '100%',
@@ -145,132 +165,126 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     left: 12,
-    backgroundColor: 'rgba(3, 25, 42, 0.9)',
+    backgroundColor: 'rgba(3, 25, 42, 0.92)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   categoryBadgeText: {
     color: COLORS.white,
     fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 0.5,
   },
   featureBadge: {
     position: 'absolute',
     top: 12,
     right: 12,
     backgroundColor: COLORS.brandBlue,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   featureBadgeText: {
     color: COLORS.white,
     fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 0.3,
   },
   body: {
-    padding: 20,
+    padding: 18,
+    gap: 14,
   },
   titleBlock: {
-    marginBottom: 16,
+    gap: 2,
   },
   brandSubtitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
     color: COLORS.brandBlue,
-    letterSpacing: 1.2,
+    letterSpacing: 1.3,
   },
   modelTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.textInk,
-    marginTop: 2,
-    lineHeight: 24,
-  },
-  specsMatrix: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#EDF2F7',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
-  specColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  specKey: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  specVal: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textInk,
-  },
-  specDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: '#E2E8F0',
-  },
-  equipmentBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0FDF4',
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 4,
-    borderLeftWidth: 3,
-    borderLeftColor: '#16A34A',
-    marginBottom: 16,
-    gap: 8,
-  },
-  checkDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#16A34A',
-  },
-  equipmentText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#15803D',
-    flex: 1,
-  },
-  pricingSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 12,
-    marginBottom: 16,
-  },
-  pricingLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#64748B',
-    marginBottom: 2,
-  },
-  priceFigure: {
     fontSize: 19,
     fontWeight: '900',
     color: COLORS.deepInk,
     letterSpacing: -0.3,
+    lineHeight: 25,
+  },
+  specsMatrix: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EDF2F7',
+    paddingVertical: 10,
+  },
+  specColumn: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 2,
+  },
+  specDivider: {
+    width: 1,
+    backgroundColor: '#E2E8F0',
+    marginVertical: 4,
+  },
+  specKey: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  specVal: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: COLORS.deepInk,
+  },
+  equipmentBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+  checkDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#22C55E',
+  },
+  equipmentText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: '#166534',
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  pricingSection: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    gap: 8,
+    paddingTop: 2,
+  },
+  pricingLabel: {
+    fontSize: 12.5,
+    color: '#64748B',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  priceFigure: {
+    fontSize: 23,
+    fontWeight: '900',
+    color: COLORS.deepInk,
+    letterSpacing: -0.5,
   },
   priceUnit: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#64748B',
   },
   driverSubInfo: {
@@ -279,10 +293,11 @@ const styles = StyleSheet.create({
   driverSubLabel: {
     fontSize: 12,
     color: '#64748B',
+    fontWeight: '600',
   },
   driverSubPrice: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '800',
     color: COLORS.brandBlue,
   },
   actionGrid: {
@@ -292,7 +307,7 @@ const styles = StyleSheet.create({
   btnOutline: {
     flex: 1,
     minHeight: 48,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#CBD5E1',
     alignItems: 'center',
@@ -300,22 +315,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   btnOutlineText: {
-    fontSize: 12.5,
+    fontSize: 13.5,
     fontWeight: '700',
     color: COLORS.deepInk,
   },
   btnPrimary: {
-    flex: 1.2,
-    backgroundColor: COLORS.brandBlue,
+    flex: 1.3,
     minHeight: 48,
-    borderRadius: 8,
+    borderRadius: 10,
+    backgroundColor: COLORS.brandBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnPrimaryText: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '800',
     color: COLORS.white,
-    letterSpacing: 0.3,
   },
 });

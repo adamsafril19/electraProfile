@@ -77,6 +77,39 @@ Aplikasi web akan terbuka otomatis di browser Anda (port `8081`).
 
 ---
 
+## 🛠️ Panel Admin
+
+Buka `http://localhost:8081/admin` (navigasi di sidebar):
+
+| Menu | Fungsi |
+| :--- | :--- |
+| **Ringkasan** | Angka kunci operasional, hal yang perlu ditindak, keuangan bulan berjalan |
+| **Pesanan** | Konfirmasi/batalkan, tugaskan driver, catat pembayaran, serah terima & pengembalian (SoC) |
+| **Jadwal** | Kalender bulanan + timeline per unit/driver, deteksi bentrok, ekspor `.ics` & tombol Google Calendar |
+| **Armada** | Tampil/sembunyi di situs, status unit, tarif & deposit |
+| **Driver** | Data driver, cuti, penugasan; penugasan yang bentrok ditolak otomatis |
+| **Keuangan** | Pemasukan, pengeluaran, piutang, deposit, buku kas (tanda "Live", segar tiap 10 dtk), ekspor CSV |
+| **Live Chat** | Inbox percakapan dengan pengunjung situs (widget chat di pojok kanan bawah situs) |
+
+Kredensial diatur di `backend/.env` (tidak masuk git):
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<password-kuat>
+ADMIN_TOKEN_SECRET=<string-acak-panjang>   # opsional; tanpa ini sesi berakhir tiap server restart
+```
+
+* Tanpa `ADMIN_PASSWORD`: di development password acak dibuat tiap start dan dicetak di log; di production login admin **dinonaktifkan**.
+* `/api/v1/admin/*` dan `/api/v1/soc/*` wajib token (`Authorization: Bearer ...`); login dibatasi 10 percobaan / 15 menit per IP.
+* **Penyimpanan data:** tanpa PostgreSQL, reservasi, driver, pembayaran, pengeluaran, chat, dan perubahan armada disimpan di `backend/data/store.json` (tidak masuk git, ditulis atomik). Cocok untuk satu server; **bukan pengganti database untuk produksi** (belum ada model Prisma untuk driver/keuangan/chat).
+* **Google Calendar:** ekspor `.ics` lalu impor di Google Calendar, atau tombol "Tambah ke Google Calendar" per reservasi. Sinkronisasi otomatis dua arah butuh kredensial Google API dan belum diaktifkan.
+* **Real-time:** memakai polling (keuangan 10 dtk, chat 3 dtk, badge sidebar 10 dtk), bukan WebSocket.
+* **Data demo (untuk mengecek tampilan dengan data):** `npm --prefix backend run dev:demo` membuat data contoh statis (17 reservasi di semua status, 5 driver, 27 pembayaran, 19 pengeluaran, 4 chat, 1 unit dalam perawatan, 1 bentrok jadwal, 1 unit terlambat kembali) dan menjalankan backend dengannya. Dibuat ulang tiap dijalankan, tanggalnya relatif terhadap hari ini, dan disimpan di `backend/data/demo-store.json` sehingga data asli (`store.json`) tidak tersentuh. Kembali ke data asli dengan `npm --prefix backend run dev`.
+* **Pintasan:** `Ctrl + K` membuka pencarian cepat (reservasi, pelanggan, driver, unit, halaman, aksi cepat).
+* Aturan jadwal: satu reservasi menempati hari `[mulai, selesai)`, jadi unit yang kembali tanggal X bisa disewa lagi mulai tanggal X.
+
+---
+
 ## 🔋 Kebijakan Baterai (SoC) & Jaminan
 1. **Penyerahan Unit**: Baterai minimal 80% – 100% dan charger portable bawaan.
 2. **Pengembalian Unit**: Baterai minimal 20% – 30% (mencegah kerusakan sel baterai).

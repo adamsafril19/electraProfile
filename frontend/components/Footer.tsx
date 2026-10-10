@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
       {/* Pre-footer Callout Banner */}
       <View style={styles.preFooter}>
         <View style={styles.preFooterInner}>
-          <View>
+          <View style={styles.preFooterText}>
             <Text style={styles.preFooterLabel}>BUTUH BANTUAN OPERASIONAL ATAU DEREK DARURAT?</Text>
             <Text style={styles.preFooterTitle}>Layanan Call Center & Emergency Roadside Siaga 24 Jam</Text>
           </View>
@@ -121,6 +121,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 16,
   },
+  // Teks boleh membungkus: tanpa ini lebarnya mengikuti satu baris penuh dan melewati layar HP
+  preFooterText: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 280,
+    minWidth: 0,
+  },
   preFooterLabel: {
     fontSize: 12,
     fontWeight: '800',
@@ -134,6 +141,8 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   preFooterCallBtn: {
+    maxWidth: '100%',
+    alignItems: 'center',
     backgroundColor: COLORS.brandBlue,
     minHeight: 48,
     justifyContent: 'center',

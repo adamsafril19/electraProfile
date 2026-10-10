@@ -23,6 +23,8 @@ export const errorHandler = (
   const statusCode = err.statusCode || 500;
   return res.status(statusCode).json({
     success: false,
-    message: err.message || 'Terjadi kesalahan internal server'
+    message: err.message || 'Terjadi kesalahan internal server',
+    ...(err.code ? { code: err.code } : {}),
+    ...(err.details ? { details: err.details } : {})
   });
 };

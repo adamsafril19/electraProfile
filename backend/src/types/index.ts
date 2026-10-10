@@ -61,6 +61,34 @@ export interface BookingInquiry {
   createdAt: string;
 }
 
+export type InquiryStatus = 'PENDING_WHATSAPP' | 'CONFIRMED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+
+// Bentuk data reservasi untuk panel admin (memuat data pelanggan lengkap, jangan dipakai di endpoint publik)
+export interface AdminInquiry {
+  id: string;
+  inquiryCode: string;
+  status: InquiryStatus;
+  vehicleId: string;
+  vehicleName: string;
+  serviceType: ServiceType;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD (startDate + durationDays)
+  durationDays: number;
+  pickupLocation: string;
+  returnLocation: string;
+  customerName: string;
+  customerPhone: string;
+  customerNotes?: string;
+  estimatedTotal: number;
+  createdAt: string;
+  soc?: SocHandoverLog;
+  driverId?: string;
+  driverName?: string;
+  // Ditambahkan layanan keuangan: total dibayar (sewa) dan status pelunasan
+  paidAmount?: number;
+  paymentStatus?: 'UNPAID' | 'PARTIAL' | 'PAID';
+}
+
 export interface SocHandoverLog {
   id: string;
   inquiryId: string;
@@ -71,5 +99,74 @@ export interface SocHandoverLog {
   returnOdometerKm?: number;
   recoveryFeeAmount: number;
   officerNotes?: string;
+  createdAt: string;
+}
+
+// ---------- Driver ----------
+export interface DriverTimeOff {
+  id: string;
+  from: string; // YYYY-MM-DD (inklusif)
+  to: string; // YYYY-MM-DD (inklusif)
+  reason: string;
+}
+
+export interface Driver {
+  id: string;
+  name: string;
+  phone: string;
+  licenseNumber?: string;
+  notes?: string;
+  isActive: boolean;
+  timeOff: DriverTimeOff[];
+  createdAt: string;
+}
+
+// ---------- Keuangan ----------
+export type PaymentType = 'DP' | 'PELUNASAN' | 'DEPOSIT' | 'REFUND_DEPOSIT' | 'DENDA';
+export type PaymentMethod = 'TRANSFER' | 'QRIS' | 'TUNAI';
+
+export interface Payment {
+  id: string;
+  inquiryId: string;
+  type: PaymentType;
+  method: PaymentMethod;
+  amount: number;
+  paidAt: string; // YYYY-MM-DD
+  note?: string;
+  createdAt: string;
+  voidedAt?: string;
+  voidReason?: string;
+}
+
+export type ExpenseCategory = 'CHARGING' | 'PERAWATAN' | 'GAJI_DRIVER' | 'ASURANSI_PAJAK' | 'OPERASIONAL' | 'LAINNYA';
+
+export interface Expense {
+  id: string;
+  category: ExpenseCategory;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  vehicleId?: string;
+  driverId?: string;
+  note?: string;
+  createdAt: string;
+  voidedAt?: string;
+  voidReason?: string;
+}
+
+// ---------- Live chat ----------
+export interface ChatSession {
+  id: string; // rahasia 128-bit, hanya diketahui pelanggan pemilik sesi
+  customerName: string;
+  createdAt: string;
+  lastMessageAt: string;
+  unreadForAdmin: number;
+  unreadForCustomer: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  sessionId: string;
+  sender: 'CUSTOMER' | 'ADMIN';
+  text: string;
   createdAt: string;
 }

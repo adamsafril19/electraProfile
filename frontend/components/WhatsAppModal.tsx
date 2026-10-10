@@ -95,8 +95,9 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({
       durationDays,
       pickupLocation,
       returnLocation,
-      customerName,
-      customerPhone,
+      customerName: customerName.trim(),
+      // Backend hanya menerima digit (dan +) tanpa spasi/strip
+      customerPhone: customerPhone.replace(/[\s-]/g, ''),
       customerNotes,
     };
 

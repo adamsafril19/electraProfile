@@ -1,5 +1,5 @@
 import app from './app';
-import { ENV } from './config/env';
+import { ENV, ADMIN_PASSWORD_GENERATED } from './config/env';
 import { checkDatabaseConnection } from './config/database';
 
 const server = app.listen(ENV.PORT, async () => {
@@ -12,7 +12,14 @@ const server = app.listen(ENV.PORT, async () => {
   console.log(`   - GET  /api/v1/fleet/:slug`);
   console.log(`   - POST /api/v1/inquiries`);
   console.log(`   - POST /api/v1/soc/handover`);
-  console.log(`   - POST /api/v1/soc/return`);
+  console.log(`   - POST /api/v1/soc/return        (admin)`);
+  console.log(`   - POST /api/v1/admin/login`);
+  console.log(`   - GET  /api/v1/admin/summary | /inquiries | /fleet   (admin)`);
+  if (!ENV.ADMIN_PASSWORD) {
+    console.warn('⚠️ [Admin] ADMIN_PASSWORD belum diset: login admin dinonaktifkan.');
+  } else if (ADMIN_PASSWORD_GENERATED) {
+    console.warn(`⚠️ [Admin] ADMIN_PASSWORD tidak diset, dibuat sementara untuk sesi ini. Login: ${ENV.ADMIN_USERNAME} / ${ENV.ADMIN_PASSWORD}`);
+  }
 
   // Verifikasi koneksi PostgreSQL
   await checkDatabaseConnection();

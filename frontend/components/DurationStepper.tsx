@@ -9,11 +9,13 @@ interface DurationStepperProps {
   value: number;
   onChange: (days: number) => void;
   label?: string;
+  // Sembunyikan teks bantu (untuk tata letak ringkas)
+  hideHelper?: boolean;
 }
 
 const clamp = (n: number) => Math.min(MAX_DURATION_DAYS, Math.max(MIN_DURATION_DAYS, n));
 
-export const DurationStepper: React.FC<DurationStepperProps> = ({ value, onChange, label = 'DURASI PENYEWAAN' }) => {
+export const DurationStepper: React.FC<DurationStepperProps> = ({ value, onChange, label = 'DURASI PENYEWAAN', hideHelper }) => {
   // Teks disimpan terpisah agar kolom bisa dikosongkan sementara saat mengetik
   const [text, setText] = useState(String(value));
 
@@ -65,7 +67,7 @@ export const DurationStepper: React.FC<DurationStepperProps> = ({ value, onChang
           <Text style={styles.btnText}>+</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.helper}>Maksimal {MAX_DURATION_DAYS} hari. Untuk sewa lebih lama, hubungi admin.</Text>
+      {!hideHelper && <Text style={styles.helper}>Maksimal {MAX_DURATION_DAYS} hari. Untuk sewa lebih lama, hubungi admin.</Text>}
     </View>
   );
 };

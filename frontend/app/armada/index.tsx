@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import Head from 'expo-router/head';
 import { COLORS } from '../../constants/colors';
 import { Vehicle } from '../../types/fleet';
 import { fetchFleetResult } from '../../services/api';
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { VehicleCard } from '../../components/VehicleCard';
 import { WhatsAppModal } from '../../components/WhatsAppModal';
+import { FadeIn } from '../../components/FadeIn';
 
 export default function FleetCatalogScreen() {
   const [fleet, setFleet] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBodyType, setSelectedBodyType] = useState<string>('ALL');
+  const [sort, setSort] = useState<'DEFAULT' | 'PRICE' | 'RANGE' | 'SEATS'>('DEFAULT');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -29,10 +32,23 @@ export default function FleetCatalogScreen() {
     loadFleet();
   }, []);
 
-  const filteredFleet = fleet.filter((v) => {
-    if (selectedBodyType === 'ALL') return true;
-    return v.bodyType === selectedBodyType;
-  });
+  const startPrice = (v: Vehicle) => v.rates.find((r) => r.serviceType === 'LEPAS_KUNCI')?.dailyRate ?? Number.MAX_SAFE_INTEGER;
+
+  const filteredFleet = fleet
+    .filter((v) => selectedBodyType === 'ALL' || v.bodyType === selectedBodyType)
+    .sort((a, b) => {
+      if (sort === 'PRICE') return startPrice(a) - startPrice(b);
+      if (sort === 'RANGE') return b.specs.rangeCltcKm - a.specs.rangeCltcKm;
+      if (sort === 'SEATS') return b.specs.seatingCapacity - a.specs.seatingCapacity;
+      return 0;
+    });
+
+  const sortOptions = [
+    { label: 'Rekomendasi', value: 'DEFAULT' as const },
+    { label: 'Termurah', value: 'PRICE' as const },
+    { label: 'Jarak terjauh', value: 'RANGE' as const },
+    { label: 'Kursi terbanyak', value: 'SEATS' as const },
+  ];
 
   const categories = [
     { label: 'Semua Kategori', value: 'ALL' },
@@ -43,6 +59,10 @@ export default function FleetCatalogScreen() {
 
   return (
     <View style={styles.container}>
+      <Head>
+        <title>Katalog Mobil Listrik untuk Disewa | Electra</title>
+        <meta name="description" content="Pilih mobil listrik sewa: Wuling Air EV, Binguo, BYD Atto 3, BYD M6, Hyundai Ioniq 5. Tarif harian transparan, baterai 80-100% saat serah terima." />
+      </Head>
       {/* Header Banner */}
       <View style={styles.header}>
         <View style={styles.headerInner}>
@@ -78,23 +98,51 @@ export default function FleetCatalogScreen() {
       {/* Grid Content */}
       <View style={styles.content}>
         {offline && !loading && <OfflineBanner onRetry={loadFleet} />}
+
+        {!loading && fleet.length > 0 && (
+          <View style={styles.toolbar}>
+            <Text style={styles.count}>
+              {filteredFleet.length} unit {selectedBodyType === 'ALL' ? 'tersedia' : 'pada kategori ini'}
+            </Text>
+            <View style={styles.sortRow}>
+              <Text style={styles.sortLabel}>Urutkan:</Text>
+              {sortOptions.map((o) => (
+                <TouchableOpacity
+                  key={o.value}
+                  style={[styles.sortChip, sort === o.value && styles.sortChipActive]}
+                  onPress={() => setSort(o.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: sort === o.value }}
+                >
+                  <Text style={[styles.sortChipText, sort === o.value && styles.sortChipTextActive]}>{o.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
         {loading ? (
-          <ActivityIndicator size="large" color={COLORS.brandBlue} style={{ marginVertical: 48 }} />
+          <View style={styles.grid}>
+            {[0, 1, 2].map((i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </View>
         ) : filteredFleet.length === 0 ? (
           <View style={styles.emptyBox}>
             <Text style={styles.emptyTitle}>Tidak ada kendaraan dalam kategori ini.</Text>
           </View>
         ) : (
           <View style={styles.grid}>
-            {filteredFleet.map((vehicle) => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
-                onBookNow={(v) => {
-                  setSelectedVehicle(v);
-                  setModalVisible(true);
-                }}
-              />
+            {filteredFleet.map((vehicle, idx) => (
+              <FadeIn key={vehicle.id} delay={Math.min(idx, 5) * 70} style={styles.cardSlot}>
+                <VehicleCard
+                  vehicle={vehicle}
+                  onBookNow={(v) => {
+                    setSelectedVehicle(v);
+                    setModalVisible(true);
+                  }}
+                />
+              </FadeIn>
             ))}
           </View>
         )}
@@ -108,6 +156,34 @@ export default function FleetCatalogScreen() {
     </View>
   );
 }
+
+// Kerangka kartu saat data dimuat, supaya tata letak tidak melompat
+const CardSkeleton: React.FC = () => {
+  const pulse = useRef(new Animated.Value(0.55)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0.55, duration: 700, useNativeDriver: false }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
+  return (
+    <Animated.View style={[styles.skeleton, { opacity: pulse }]} accessibilityLabel="Memuat armada">
+      <View style={styles.skImage} />
+      <View style={{ padding: 18, gap: 12 }}>
+        <View style={[styles.skLine, { width: '35%' }]} />
+        <View style={[styles.skLine, { width: '75%', height: 20 }]} />
+        <View style={[styles.skLine, { height: 56 }]} />
+        <View style={[styles.skLine, { width: '50%', height: 24 }]} />
+        <View style={[styles.skLine, { height: 48 }]} />
+      </View>
+    </Animated.View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -194,6 +270,76 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 20,
     justifyContent: 'center',
+  },
+  toolbar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 22,
+  },
+  count: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.deepInk,
+  },
+  sortRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+    maxWidth: '100%',
+  },
+  sortLabel: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  sortChip: {
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: COLORS.white,
+  },
+  sortChipActive: {
+    backgroundColor: COLORS.deepInk,
+    borderColor: COLORS.deepInk,
+  },
+  sortChipText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  sortChipTextActive: {
+    color: COLORS.white,
+  },
+  cardSlot: {
+    width: '100%',
+    maxWidth: 370,
+    alignItems: 'center',
+  },
+  skeleton: {
+    width: '100%',
+    maxWidth: 370,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  skImage: {
+    height: 210,
+    backgroundColor: '#E2E8F0',
+  },
+  skLine: {
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#E2E8F0',
   },
   emptyBox: {
     alignItems: 'center',
