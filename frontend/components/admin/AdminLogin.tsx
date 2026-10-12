@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'r
 import { Copy, Check, KeyRound, Zap } from 'lucide-react-native';
 import { COLORS } from '../../constants/colors';
 import { adminLogin, AdminApiError } from '../../services/adminApi';
-import { Btn, Card, ErrorBox, adminStyles } from './ui';
+import { Btn, Card, ErrorBox, adminStyles, HStack, GBadge, BadgeText } from './ui';
 
 const DEMO_CREDENTIALS = {
   username: 'admin',
@@ -61,7 +61,12 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
   return (
     <View style={styles.wrap}>
       <Card style={styles.card}>
-        <Text style={styles.eyebrow}>ELECTRA ADMIN</Text>
+        <HStack alignItems="center" justifyContent="space-between" mb={6}>
+          <Text style={styles.eyebrow}>ELECTRA ADMIN</Text>
+          <GBadge size="sm" variant="solid" action="info" borderRadius={999}>
+            <BadgeText fontSize={10} fontWeight="700">Gluestack UI</BadgeText>
+          </GBadge>
+        </HStack>
         <Text style={styles.title}>Masuk Panel Admin</Text>
         <Text style={[adminStyles.muted, { marginBottom: 14 }]}>
           Kelola reservasi, status unit baterai, dan penugasan sopir armada EV.

@@ -2,9 +2,66 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Alert, Linking, Animated } from 'react-native';
 import { Inbox, X } from 'lucide-react-native';
 import type { LucideIcon } from 'lucide-react-native';
+import {
+  Box,
+  Heading,
+  VStack,
+  HStack,
+  Button as GButton,
+  ButtonText,
+  ButtonIcon,
+  Badge as GBadge,
+  BadgeText,
+  BadgeIcon,
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Select,
+  SelectTrigger,
+  SelectInput,
+  SelectIcon,
+  SelectPortal,
+  SelectBackdrop,
+  SelectContent,
+  SelectItem,
+  Divider,
+} from '@gluestack-ui/themed';
 import { InquiryStatus, STATUS_LABEL } from '../../services/adminApi';
 import { T, shadow } from './theme';
 import { showConfirm, showPrompt } from './feedback';
+
+export {
+  Box,
+  Heading,
+  VStack,
+  HStack,
+  GButton,
+  ButtonText,
+  ButtonIcon,
+  GBadge,
+  BadgeText,
+  BadgeIcon,
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Select,
+  SelectTrigger,
+  SelectInput,
+  SelectIcon,
+  SelectPortal,
+  SelectBackdrop,
+  SelectContent,
+  SelectItem,
+  Divider,
+};
 
 export type IconType = LucideIcon;
 

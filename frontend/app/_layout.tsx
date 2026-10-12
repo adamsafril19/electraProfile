@@ -2,6 +2,8 @@ import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Slot, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GluestackUIProvider } from '@gluestack-ui/themed';
+import { config } from '@gluestack-ui/config';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ChatWidget } from '../components/ChatWidget';
@@ -12,23 +14,27 @@ export default function RootLayout() {
   // Area admin punya layout sendiri (sidebar + scroll sendiri), tanpa Navbar/Footer/ChatWidget situs publik
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
     return (
-      <View style={styles.container}>
-        <StatusBar style="light" />
-        <Slot />
-      </View>
+      <GluestackUIProvider config={config}>
+        <View style={styles.container}>
+          <StatusBar style="light" />
+          <Slot />
+        </View>
+      </GluestackUIProvider>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      <Navbar />
-      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.contentContainer}>
-        <Slot />
-        <Footer />
-      </ScrollView>
-      <ChatWidget />
-    </View>
+    <GluestackUIProvider config={config}>
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <Navbar />
+        <ScrollView style={styles.scrollArea} contentContainerStyle={styles.contentContainer}>
+          <Slot />
+          <Footer />
+        </ScrollView>
+        <ChatWidget />
+      </View>
+    </GluestackUIProvider>
   );
 }
 
