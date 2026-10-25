@@ -16,6 +16,7 @@ async function main() {
   // 1. Wuling Air EV Long Range
   const wulingAir = await prisma.vehicle.create({
     data: {
+      id: 'veh-001',
       slug: 'wuling-air-ev-long-range',
       brand: 'Wuling',
       model: 'Air EV Long Range',
@@ -58,6 +59,7 @@ async function main() {
   // 2. Wuling Binguo EV Premium Range 410km
   const wulingBinguo = await prisma.vehicle.create({
     data: {
+      id: 'veh-002',
       slug: 'wuling-binguo-ev-410km',
       brand: 'Wuling',
       model: 'Binguo EV Premium Range 410 km',
@@ -102,6 +104,7 @@ async function main() {
   // 3. BYD Atto 3 Superior Extended
   const bydAtto = await prisma.vehicle.create({
     data: {
+      id: 'veh-003',
       slug: 'byd-atto-3-superior',
       brand: 'BYD',
       model: 'Atto 3 Superior Extended',
@@ -147,6 +150,7 @@ async function main() {
   // 4. BYD M6 Superior Extended (7-Seater MPV)
   const bydM6 = await prisma.vehicle.create({
     data: {
+      id: 'veh-004',
       slug: 'byd-m6-superior-7-seater',
       brand: 'BYD',
       model: 'M6 Superior Extended (7-Seater MPV)',
@@ -192,6 +196,7 @@ async function main() {
   // 5. Hyundai Ioniq 5 Signature Long Range
   const ioniq5 = await prisma.vehicle.create({
     data: {
+      id: 'veh-005',
       slug: 'hyundai-ioniq-5-signature',
       brand: 'Hyundai',
       model: 'Ioniq 5 Signature Long Range',

@@ -15,11 +15,17 @@ import {
 } from '../../services/adminApi';
 import {
   Avatar,
+  Box,
   Btn,
   Card,
   Chip,
   EmptyState,
   ErrorBox,
+  GBadge,
+  BadgeText,
+  Heading,
+  HStack,
+  VStack,
   Loading,
   DismissibleNotice,
   PageHeader,
@@ -152,6 +158,7 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
   return (
     <View style={{ gap: 16 }}>
       <PageHeader
+        tag="MANAJEMEN RESERVASI"
         title="Pesanan"
         subtitle="Kelola reservasi pelanggan: konfirmasi, driver, pembayaran, serah terima, dan pengembalian."
         right={
@@ -465,57 +472,154 @@ const InquiryDetail: React.FC<{ inquiry: AdminInquiry; onChanged: () => void; on
     <View style={{ gap: 14 }}>
       <StatusStepper status={i.status} />
 
-      <View style={styles.infoGrid}>
-        <Info label="Layanan" value={i.serviceType === 'LEPAS_KUNCI' ? 'Lepas Kunci (24 jam)' : 'Dengan Sopir (12 jam)'} />
-        <Info label="WhatsApp" value={i.customerPhone} />
-        <Info label="Serah terima" value={i.pickupLocation} />
-        <Info label="Pengembalian" value={i.returnLocation} />
-        <Info label="Masuk" value={fmtDateTime(i.createdAt)} />
-        {i.customerNotes ? <Info label="Catatan" value={i.customerNotes} /> : null}
+      {/* Grid 4-Kotak Ringkasan Operasional ala Stitch */}
+      <View style={styles.grid4}>
+        <View style={styles.gridBox}>
+          <Text style={styles.gridBoxLabel}>UNIT ARMADA</Text>
+          <Text style={styles.gridBoxTitle} numberOfLines={1}>{i.vehicleName}</Text>
+          <Text style={styles.gridBoxSub}>Unit EV Terpilih</Text>
+        </View>
+        <View style={styles.gridBox}>
+          <Text style={styles.gridBoxLabel}>PAKET & LAYANAN</Text>
+          <Text style={styles.gridBoxTitle}>
+            {i.durationDays} Hari ({i.serviceType === 'LEPAS_KUNCI' ? 'Lepas Kunci' : 'Dengan Sopir'})
+          </Text>
+          <Text style={styles.gridBoxSub}>Total {rp(i.estimatedTotal)}</Text>
+        </View>
+        <View style={styles.gridBox}>
+          <Text style={styles.gridBoxLabel}>JADWAL PENGAMBILAN</Text>
+          <Text style={styles.gridBoxTitle}>{fmtDate(i.startDate)}</Text>
+          <Text style={styles.gridBoxSub} numberOfLines={1}>{i.pickupLocation || 'Kantor Pusat'}</Text>
+        </View>
+        <View style={styles.gridBox}>
+          <Text style={styles.gridBoxLabel}>JADWAL PENGEMBALIAN</Text>
+          <Text style={styles.gridBoxTitle}>{fmtDate(i.endDate)}</Text>
+          <Text style={styles.gridBoxSub} numberOfLines={1}>{i.returnLocation || 'Kantor Pusat'}</Text>
+        </View>
       </View>
 
       {error ? <ErrorBox message={error} /> : null}
       {notice ? <WarnBox message={notice} /> : null}
 
-      <View style={adminStyles.row}>
-        <Btn label="Hubungi WhatsApp" icon={MessageCircle} variant="secondary" small onPress={() => openWhatsAppTo(i.customerPhone, `Halo ${i.customerName}, terkait reservasi ${i.inquiryCode}.`)} />
-        <Btn label="Tambah ke Google Calendar" icon={CalendarPlus} variant="secondary" small onPress={() => openExternal(googleCalendarLink(i))} />
-        {i.status === 'PENDING_WHATSAPP' && <Btn label="Konfirmasi" icon={Check} small onPress={() => changeStatus('CONFIRMED')} loading={busy} />}
-        {(i.status === 'PENDING_WHATSAPP' || i.status === 'CONFIRMED') && (
-          <Btn label="Batalkan" icon={X} variant="danger" small disabled={busy} onPress={() => changeStatus('CANCELLED', `Batalkan reservasi ${i.inquiryCode} atas nama ${i.customerName}?`)} />
-        )}
-        {i.status === 'CANCELLED' && (
-          <Btn label="Aktifkan kembali" variant="secondary" small disabled={busy} onPress={() => changeStatus('PENDING_WHATSAPP', `Kembalikan reservasi ${i.inquiryCode} ke status Menunggu Konfirmasi?`)} />
-        )}
+      {/* Workspace 2-Kolom Panel Operasional */}
+      <View style={styles.splitPanel}>
+        {/* Kolom Kiri: Dokumen Pelanggan & Penugasan Driver */}
+        <View style={styles.splitCol}>
+          <Card style={{ padding: 14 }}>
+            <HStack justifyContent="space-between" alignItems="center" pb={10} mb={10} style={{ borderBottomWidth: 1, borderColor: '#F1F5F9' }}>
+              <HStack alignItems="center" gap={7}>
+                <ClipboardList size={16} color={T.brand} />
+                <Text style={styles.panelSectionTitle}>Dokumen & Info Pelanggan</Text>
+              </HStack>
+              <GBadge size="sm" variant="solid" bg="#ECFDF5" borderRadius={6} px="$2">
+                <BadgeText style={{ color: '#065F46', fontSize: 10.5, fontWeight: '800' }}>
+                  ✓ Terverifikasi
+                </BadgeText>
+              </GBadge>
+            </HStack>
+
+            <VStack gap={8}>
+              <HStack justifyContent="space-between" alignItems="center">
+                <Text style={styles.panelRowLabel}>Nama Pemesan:</Text>
+                <Text style={styles.panelRowVal}>{i.customerName}</Text>
+              </HStack>
+              <HStack justifyContent="space-between" alignItems="center">
+                <Text style={styles.panelRowLabel}>No. WhatsApp:</Text>
+                <Text style={styles.panelRowVal}>{i.customerPhone}</Text>
+              </HStack>
+              <HStack justifyContent="space-between" alignItems="center">
+                <Text style={styles.panelRowLabel}>Waktu Masuk:</Text>
+                <Text style={styles.panelRowVal}>{fmtDateTime(i.createdAt)}</Text>
+              </HStack>
+              {i.customerNotes ? (
+                <Box style={styles.customerNotesBox}>
+                  <Text style={styles.customerNotesLabel}>Catatan Khusus Penyewa:</Text>
+                  <Text style={styles.customerNotesText}>{i.customerNotes}</Text>
+                </Box>
+              ) : null}
+            </VStack>
+          </Card>
+
+          {i.serviceType === 'DENGAN_DRIVER' && (
+            <InquiryDriver inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} />
+          )}
+
+          {/* Bilah Tombol Aksi */}
+          <HStack flexWrap="wrap" gap={8} pt={4}>
+            <Btn
+              label="Hubungi WhatsApp"
+              icon={MessageCircle}
+              variant="secondary"
+              small
+              onPress={() => openWhatsAppTo(i.customerPhone, `Halo ${i.customerName}, terkait reservasi #${i.inquiryCode} untuk unit ${i.vehicleName} di Electra.`)}
+            />
+            <Btn
+              label="Google Calendar"
+              icon={CalendarPlus}
+              variant="secondary"
+              small
+              onPress={() => openExternal(googleCalendarLink(i))}
+            />
+            {i.status === 'PENDING_WHATSAPP' && (
+              <Btn
+                label="Konfirmasi 1-Klik"
+                icon={Check}
+                small
+                onPress={() => changeStatus('CONFIRMED')}
+                loading={busy}
+              />
+            )}
+            {(i.status === 'PENDING_WHATSAPP' || i.status === 'CONFIRMED') && (
+              <Btn
+                label="Batalkan"
+                icon={X}
+                variant="danger"
+                small
+                disabled={busy}
+                onPress={() => changeStatus('CANCELLED', `Batalkan reservasi ${i.inquiryCode} atas nama ${i.customerName}?`)}
+              />
+            )}
+            {i.status === 'CANCELLED' && (
+              <Btn
+                label="Aktifkan kembali"
+                variant="secondary"
+                small
+                disabled={busy}
+                onPress={() => changeStatus('PENDING_WHATSAPP', `Kembalikan reservasi ${i.inquiryCode} ke status Menunggu Konfirmasi?`)}
+              />
+            )}
+          </HStack>
+        </View>
+
+        {/* Kolom Kanan: Rincian Pembayaran & BAP Handover / Return */}
+        <View style={styles.splitCol}>
+          <InquiryPayments inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} />
+
+          <SocSummary inquiry={i} />
+          {canHandover && (
+            <HandoverForm
+              inquiry={i}
+              onDone={(msg) => {
+                setNotice(msg);
+                toast.success('Serah terima tercatat');
+                onChanged();
+              }}
+              onUnauthorized={onUnauthorized}
+            />
+          )}
+          {canReturn && (
+            <ReturnForm
+              inquiry={i}
+              onDone={(msg) => {
+                setNotice(msg);
+                toast.success('Pengembalian tercatat, reservasi selesai');
+                onChanged();
+              }}
+              onUnauthorized={onUnauthorized}
+            />
+          )}
+        </View>
       </View>
-
-      {i.serviceType === 'DENGAN_DRIVER' && <InquiryDriver inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} />}
-
-      <InquiryPayments inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} />
-
-      <SocSummary inquiry={i} />
-      {canHandover && (
-        <HandoverForm
-          inquiry={i}
-          onDone={(msg) => {
-            setNotice(msg);
-            toast.success('Serah terima tercatat');
-            onChanged();
-          }}
-          onUnauthorized={onUnauthorized}
-        />
-      )}
-      {canReturn && (
-        <ReturnForm
-          inquiry={i}
-          onDone={(msg) => {
-            setNotice(msg);
-            toast.success('Pengembalian tercatat, reservasi selesai');
-            onChanged();
-          }}
-          onUnauthorized={onUnauthorized}
-        />
-      )}
     </View>
   );
 };
@@ -579,4 +683,18 @@ const styles = StyleSheet.create({
   tCell: { fontSize: 13.5, color: T.inkSoft },
   tTotal: { fontSize: 14, fontWeight: '900', color: T.ink },
   tDetail: { padding: 16, paddingTop: 4 },
+
+  grid4: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  gridBox: { flex: 1, minWidth: 140, backgroundColor: '#F8FAFC', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', padding: 12, justifyContent: 'space-between' },
+  gridBoxLabel: { fontSize: 10.5, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, marginBottom: 4 },
+  gridBoxTitle: { fontSize: 13.5, fontWeight: '800', color: '#0F172A' },
+  gridBoxSub: { fontSize: 11.5, color: '#64748B', marginTop: 2 },
+  splitPanel: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'flex-start' },
+  splitCol: { flex: 1, minWidth: 280, gap: 12 },
+  panelSectionTitle: { fontSize: 13, fontWeight: '800', color: '#0F172A' },
+  panelRowLabel: { fontSize: 12, color: '#64748B' },
+  panelRowVal: { fontSize: 12.5, fontWeight: '700', color: '#0F172A' },
+  customerNotesBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 8, padding: 10, marginTop: 4 },
+  customerNotesLabel: { fontSize: 10.5, fontWeight: '800', color: '#92400E', marginBottom: 2 },
+  customerNotesText: { fontSize: 12, color: '#78350F', lineHeight: 17 },
 });

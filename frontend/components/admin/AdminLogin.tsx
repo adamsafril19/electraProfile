@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'r
 import { Copy, Check, KeyRound, Zap } from 'lucide-react-native';
 import { COLORS } from '../../constants/colors';
 import { adminLogin, AdminApiError } from '../../services/adminApi';
+import { Input, InputField } from '@gluestack-ui/themed';
 import { Btn, Card, ErrorBox, adminStyles, HStack, GBadge, BadgeText } from './ui';
 
 const DEMO_CREDENTIALS = {
@@ -165,29 +166,31 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
         </View>
 
         <Text style={adminStyles.label}>USERNAME</Text>
-        <TextInput
-          style={adminStyles.input}
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="username"
-          placeholder="Masukkan username"
-          placeholderTextColor="#64748B"
-        />
+        <Input size="md" variant="outline" style={styles.inputWrap}>
+          <InputField
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="username"
+            placeholder="Masukkan username"
+            placeholderTextColor="#64748B"
+          />
+        </Input>
 
         <Text style={[adminStyles.label, { marginTop: 12 }]}>PASSWORD</Text>
-        <TextInput
-          style={adminStyles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-          autoComplete="current-password"
-          onSubmitEditing={submit}
-          placeholder="Masukkan password"
-          placeholderTextColor="#64748B"
-        />
+        <Input size="md" variant="outline" style={styles.inputWrap}>
+          <InputField
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="current-password"
+            onSubmitEditing={submit}
+            placeholder="Masukkan password"
+            placeholderTextColor="#64748B"
+          />
+        </Input>
 
         {error ? (
           <View style={{ marginTop: 12 }}>
@@ -329,6 +332,14 @@ const styles = StyleSheet.create({
     color: '#0369A1',
     fontStyle: 'italic',
     marginTop: 2,
+  },
+  inputWrap: {
+    minHeight: 44,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 8,
   },
 });
 

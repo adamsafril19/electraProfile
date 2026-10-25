@@ -13,6 +13,9 @@ import {
   Badge as GBadge,
   BadgeText,
   BadgeIcon,
+  Card as GCard,
+  Pressable,
+  Spinner,
   Modal,
   ModalBackdrop,
   ModalContent,
@@ -60,6 +63,9 @@ export {
   SelectBackdrop,
   SelectContent,
   SelectItem,
+  GCard,
+  Pressable,
+  Spinner,
   Divider,
 };
 
@@ -148,10 +154,10 @@ const STATUS_COLORS: Record<InquiryStatus, { bg: string; fg: string; dot: string
 export const statusColor = (s: InquiryStatus) => STATUS_COLORS[s];
 
 export const StatusBadge: React.FC<{ status: InquiryStatus }> = ({ status }) => (
-  <View style={[styles.badge, { backgroundColor: STATUS_COLORS[status].bg }]}>
+  <GBadge size="sm" variant="solid" borderRadius={999} style={[styles.badge, { backgroundColor: STATUS_COLORS[status].bg }]}>
     <View style={[styles.badgeDot, { backgroundColor: STATUS_COLORS[status].dot }]} />
-    <Text style={[styles.badgeText, { color: STATUS_COLORS[status].fg }]}>{STATUS_LABEL[status]}</Text>
-  </View>
+    <BadgeText style={[styles.badgeText, { color: STATUS_COLORS[status].fg }]}>{STATUS_LABEL[status]}</BadgeText>
+  </GBadge>
 );
 
 type Tone = 'neutral' | 'info' | 'success' | 'warn' | 'danger';
@@ -165,35 +171,59 @@ const TONES: Record<Tone, { bg: string; fg: string; border: string }> = {
 export const toneColors = (t: Tone) => TONES[t];
 
 export const Pill: React.FC<{ label: string; tone?: Tone }> = ({ label, tone = 'neutral' }) => (
-  <View style={[styles.pill, { backgroundColor: TONES[tone].bg, borderColor: TONES[tone].border }]}>
-    <Text style={[styles.pillText, { color: TONES[tone].fg }]}>{label}</Text>
-  </View>
+  <GBadge size="sm" variant="outline" borderRadius={999} style={[styles.pill, { backgroundColor: TONES[tone].bg, borderColor: TONES[tone].border }]}>
+    <BadgeText style={[styles.pillText, { color: TONES[tone].fg }]}>{label}</BadgeText>
+  </GBadge>
 );
 
 export const Card: React.FC<{ children: React.ReactNode; style?: any }> = ({ children, style }) => (
-  <View style={[styles.card, style]}>{children}</View>
+  <GCard size="md" variant="elevated" style={[styles.card, style]}>{children}</GCard>
 );
 
 export const SectionTitle: React.FC<{ children: React.ReactNode; hint?: string; right?: React.ReactNode }> = ({ children, hint, right }) => (
-  <View style={styles.sectionTitleRow}>
-    <View style={{ flex: 1, minWidth: 160 }}>
-      <Text style={styles.sectionTitle}>{children}</Text>
+  <HStack flexWrap="wrap" alignItems="center" gap={10} mb={12}>
+    <VStack flex={1} minWidth={160}>
+      <Heading size="sm" style={styles.sectionTitle}>{children}</Heading>
       {hint ? <Text style={styles.sectionHint}>{hint}</Text> : null}
-    </View>
+    </VStack>
     {right}
-  </View>
+  </HStack>
 );
 
-export const PageHeader: React.FC<{ title: string; subtitle?: string; right?: React.ReactNode }> = ({ title, subtitle, right }) => (
-  <View style={styles.pageHeader}>
-    <View style={{ flex: 1, minWidth: 220 }}>
-      <Text style={styles.pageTitle} accessibilityRole="header">
-        {title}
-      </Text>
-      {subtitle ? <Text style={styles.pageSubtitle}>{subtitle}</Text> : null}
-    </View>
-    {right ? <View style={styles.pageActions}>{right}</View> : null}
-  </View>
+const HeaderContext = React.createContext(false);
+
+export const PageHeader: React.FC<{
+  title: string;
+  subtitle?: string;
+  tag?: string;
+  statusBadge?: React.ReactNode;
+  right?: React.ReactNode;
+}> = ({ title, subtitle, tag, statusBadge, right }) => (
+  <Box style={[styles.headerBanner, shadow]} mb={20}>
+    <HStack flexWrap="wrap" justifyContent="space-between" alignItems="center" gap={16}>
+      <VStack gap={5} flex={1} minWidth={240}>
+        <HStack alignItems="center" gap={8} flexWrap="wrap">
+          {tag ? (
+            <GBadge size="sm" variant="solid" bg="rgba(255,255,255,0.18)" borderRadius={999} px="$2.5" py="$0.5">
+              <BadgeText style={styles.headerTagText}>{tag.toUpperCase()}</BadgeText>
+            </GBadge>
+          ) : null}
+          {statusBadge}
+        </HStack>
+        <Heading size="xl" style={styles.headerTitle} accessibilityRole="header">
+          {title}
+        </Heading>
+        {subtitle ? <Text style={styles.headerSubtitle}>{subtitle}</Text> : null}
+      </VStack>
+      {right ? (
+        <HeaderContext.Provider value={true}>
+          <HStack flexWrap="wrap" gap={8} alignItems="center" maxWidth="100%">
+            {right}
+          </HStack>
+        </HeaderContext.Provider>
+      ) : null}
+    </HStack>
+  </Box>
 );
 
 type BtnVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
@@ -206,24 +236,44 @@ export const Btn: React.FC<{
   small?: boolean;
   icon?: LucideIcon;
 }> = ({ label, onPress, variant = 'primary', disabled, loading, small, icon: Icon }) => {
-  const v = btnVariants[variant];
+  const inHeader = React.useContext(HeaderContext);
+  let v = btnVariants[variant];
+  if (inHeader) {
+    if (variant === 'secondary') {
+      v = {
+        box: { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.28)' },
+        textColor: '#FFFFFF',
+      };
+    } else if (variant === 'ghost') {
+      v = {
+        box: { backgroundColor: 'transparent', borderColor: 'rgba(255,255,255,0.22)' },
+        textColor: '#BAE6FD',
+      };
+    } else if (variant === 'primary') {
+      v = {
+        box: { backgroundColor: '#0284C7', borderColor: '#0284C7' },
+        textColor: '#FFFFFF',
+      };
+    }
+  }
+
   return (
-    <TouchableOpacity
+    <GButton
       style={[styles.btn, small && styles.btnSmall, v.box, (disabled || loading) && { opacity: 0.55 }]}
       onPress={onPress}
-      disabled={disabled || loading}
+      isDisabled={disabled || loading}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={v.textColor} />
+        <Spinner size="small" color={v.textColor} />
       ) : (
-        <View style={styles.btnInner}>
+        <HStack alignItems="center" gap={7}>
           {Icon ? <Icon size={small ? 15 : 17} color={v.textColor} /> : null}
-          <Text style={[styles.btnText, { color: v.textColor }]}>{label}</Text>
-        </View>
+          <ButtonText style={[styles.btnText, { color: v.textColor }]}>{label}</ButtonText>
+        </HStack>
       )}
-    </TouchableOpacity>
+    </GButton>
   );
 };
 
@@ -234,7 +284,7 @@ export const Chip: React.FC<{
   count?: number | null;
   tone?: Tone;
 }> = ({ label, active, onPress, count, tone }) => (
-  <TouchableOpacity
+  <Pressable
     style={[styles.chip, active && styles.chipActive, !active && tone ? { borderColor: TONES[tone].border } : null]}
     onPress={onPress}
     disabled={!onPress}
@@ -243,11 +293,11 @@ export const Chip: React.FC<{
   >
     <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
     {count !== null && count !== undefined ? (
-      <View style={[styles.chipCount, active && { backgroundColor: 'rgba(255,255,255,0.22)' }]}>
+      <Box style={[styles.chipCount, active && { backgroundColor: 'rgba(255,255,255,0.22)' }]}>
         <Text style={[styles.chipCountText, active && { color: '#FFFFFF' }]}>{count}</Text>
-      </View>
+      </Box>
     ) : null}
-  </TouchableOpacity>
+  </Pressable>
 );
 
 export const StatTile: React.FC<{
@@ -260,27 +310,27 @@ export const StatTile: React.FC<{
 }> = ({ label, value, hint, tone = 'info', icon: Icon, onPress }) => {
   const c = TONES[tone];
   const body = (
-    <>
-      <View style={styles.tileTop}>
+    <VStack gap={4}>
+      <HStack justifyContent="space-between" alignItems="flex-start" gap={8} minHeight={36}>
         <Text style={styles.tileLabel}>{label}</Text>
         {Icon ? (
-          <View style={[styles.tileIcon, { backgroundColor: c.bg }]}>
+          <Box style={[styles.tileIcon, { backgroundColor: c.bg }]}>
             <Icon size={17} color={c.fg} />
-          </View>
+          </Box>
         ) : null}
-      </View>
-      <Text style={[styles.tileValue, { color: tone === 'neutral' ? T.ink : c.fg }]} numberOfLines={1} adjustsFontSizeToFit>
+      </HStack>
+      <Heading size="xl" style={[styles.tileValue, { color: tone === 'neutral' ? T.ink : c.fg }]} numberOfLines={1}>
         {value}
-      </Text>
+      </Heading>
       {hint ? <Text style={styles.tileHint}>{hint}</Text> : null}
-    </>
+    </VStack>
   );
   return onPress ? (
-    <TouchableOpacity style={[styles.tile, shadow]} onPress={onPress} accessibilityRole="button">
+    <Pressable style={[styles.tile, shadow]} onPress={onPress} accessibilityRole="button">
       {body}
-    </TouchableOpacity>
+    </Pressable>
   ) : (
-    <View style={[styles.tile, shadow]}>{body}</View>
+    <GCard style={[styles.tile, shadow]}>{body}</GCard>
   );
 };
 
@@ -305,14 +355,14 @@ export const EmptyState: React.FC<{
   icon?: LucideIcon;
   action?: React.ReactNode;
 }> = ({ title, text, icon: Icon = Inbox, action }) => (
-  <View style={styles.empty}>
-    <View style={styles.emptyIcon}>
+  <VStack style={styles.empty}>
+    <Box style={styles.emptyIcon}>
       <Icon size={26} color={T.muted} />
-    </View>
-    <Text style={styles.emptyTitle}>{title}</Text>
+    </Box>
+    <Heading size="sm" style={styles.emptyTitle}>{title}</Heading>
     {text ? <Text style={styles.emptyText}>{text}</Text> : null}
-    {action ? <View style={{ marginTop: 14 }}>{action}</View> : null}
-  </View>
+    {action ? <Box style={{ marginTop: 14 }}>{action}</Box> : null}
+  </VStack>
 );
 
 export const FormField: React.FC<{ label: string; error?: string | null; hint?: string; children: React.ReactNode; style?: any }> = ({
@@ -330,22 +380,22 @@ export const FormField: React.FC<{ label: string; error?: string | null; hint?: 
 );
 
 export const ErrorBox: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => (
-  <View style={styles.errorBox} accessibilityRole="alert">
+  <Box style={styles.errorBox} accessibilityRole="alert">
     <Text style={styles.errorText}>{message}</Text>
     {onRetry ? <Btn label="Coba lagi" onPress={onRetry} variant="danger" small /> : null}
-  </View>
+  </Box>
 );
 
 export const WarnBox: React.FC<{ message: string }> = ({ message }) => (
-  <View style={styles.warnBox} accessibilityRole="alert">
+  <Box style={styles.warnBox} accessibilityRole="alert">
     <Text style={styles.warnText}>{message}</Text>
-  </View>
+  </Box>
 );
 
 export const InfoBox: React.FC<{ message: string }> = ({ message }) => (
-  <View style={styles.infoBox}>
+  <Box style={styles.infoBox}>
     <Text style={styles.infoText}>{message}</Text>
-  </View>
+  </Box>
 );
 
 // Kerangka kartu saat memuat: tata letak tidak melompat ketika data tiba
@@ -456,6 +506,31 @@ const styles = StyleSheet.create({
   sectionTitleRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 12 },
   sectionTitle: { fontSize: 16, fontWeight: '900', color: T.ink },
   sectionHint: { fontSize: 12.5, color: T.muted, marginTop: 2, lineHeight: 18 },
+  headerBanner: {
+    backgroundColor: '#06223A',
+    borderRadius: 18,
+    paddingHorizontal: 22,
+    paddingVertical: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(14, 165, 233, 0.22)',
+  },
+  headerTagText: {
+    color: '#BAE6FD',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    color: 'rgba(224, 242, 254, 0.82)',
+    fontSize: 12.5,
+    fontWeight: '500',
+    lineHeight: 18,
+  },
   pageHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: 20 },
   pageTitle: { fontSize: 26, fontWeight: '900', color: T.ink, letterSpacing: -0.4 },
   pageSubtitle: { fontSize: 14, color: T.muted, marginTop: 3, lineHeight: 20 },
