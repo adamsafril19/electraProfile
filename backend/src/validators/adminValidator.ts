@@ -119,3 +119,37 @@ export const updateVehicleSchema = z
   .refine((d) => d.isActive !== undefined || d.status !== undefined || (d.rates && d.rates.length > 0), {
     message: 'Tidak ada perubahan yang dikirim'
   });
+
+export const createVehicleSchema = z.object({
+  brand: z.string().min(2, 'Merek minimal 2 karakter').max(50),
+  model: z.string().min(2, 'Model minimal 2 karakter').max(50),
+  bodyType: z.enum(['CITY_CAR', 'COMPACT_SUV', 'MPV']),
+  licensePlate: z.string().min(3, 'Nomor polisi minimal 3 karakter').max(20),
+  imageUrl: z.string().optional().or(z.literal('')),
+  thumbnailUrl: z.string().optional().or(z.literal('')),
+  status: z.enum(['AVAILABLE', 'BOOKED', 'MAINTENANCE']).default('AVAILABLE'),
+  tags: z.array(z.string()).default([]),
+  maintenanceNote: z.string().optional(),
+  specs: z.object({
+    batteryCapacityKwh: z.coerce.number().min(5, 'Kapasitas baterai minimal 5 kWh').max(300),
+    rangeCltcKm: z.coerce.number().int().min(50, 'Jarak tempuh minimal 50 km').max(1500),
+    portType: z.enum(['CCS2', 'GB_T', 'TYPE_2']).default('CCS2'),
+    maxAcKw: z.coerce.number().min(1).max(50).default(7.0),
+    maxDcKw: z.coerce.number().min(0).max(500).optional(),
+    seatingCapacity: z.coerce.number().int().min(2).max(20).default(5),
+    portableChargerIncluded: z.boolean().default(true),
+    gbtAdapterIncluded: z.boolean().default(false),
+    chargingTimeAcHours: z.coerce.number().min(0.5).max(48).default(6.0),
+    chargingTimeDcMinutes: z.coerce.number().int().min(10).max(300).optional(),
+  }),
+  rates: z
+    .array(
+      z.object({
+        serviceType: z.enum(['LEPAS_KUNCI', 'DENGAN_DRIVER']),
+        dailyRate: money('Tarif harian').refine((n) => n > 0, 'Tarif harian harus lebih dari 0'),
+        depositAmount: money('Deposit').default(500000),
+        overtimeHourlyRate: money('Tarif lembur per jam').optional(),
+      })
+    )
+    .min(1, 'Minimal harus ada 1 paket tarif sewa'),
+});

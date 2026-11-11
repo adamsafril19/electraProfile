@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
-import { CalendarPlus, Check, ChevronDown, ChevronUp, ClipboardList, LayoutList, MessageCircle, Search, Table2, X } from 'lucide-react-native';
+import { CalendarPlus, Check, ChevronDown, ChevronUp, ClipboardList, Download, FileText, LayoutList, MessageCircle, Plus, Printer, Search, Table2, X } from 'lucide-react-native';
 import {
   AdminApiError,
   AdminInquiry,
@@ -39,11 +39,15 @@ import {
   openExternal,
   openWhatsAppTo,
   rp,
+  downloadCsv,
 } from './ui';
 import { InquiryDriver } from './InquiryDriver';
 import { InquiryPayments } from './InquiryPayments';
 import { HandoverForm, ReturnForm, SocSummary } from './InquirySoc';
 import { confirmInquiryFlow } from './inquiryActions';
+import { ManualBookingModal } from './ManualBookingModal';
+import { InvoiceModal } from './InvoiceModal';
+import { toDateStr } from '../../utils/date';
 import { toast } from './feedback';
 import { T } from './theme';
 
@@ -89,6 +93,8 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(focus?.id || null);
+  const [showManualBooking, setShowManualBooking] = useState(false);
+  const [invoiceInquiry, setInvoiceInquiry] = useState<AdminInquiry | null>(null);
   const reqSeq = useRef(0);
 
   // Debounce pencarian agar tidak memanggil API di setiap ketukan
@@ -149,6 +155,54 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
   const filtersActive = filter !== 'ALL' || flags.length > 0 || !!query;
   const showTable = view === 'table' && canTable;
 
+  const handleExportCsv = () => {
+    if (items.length === 0) {
+      toast.info('Tidak ada data pesanan untuk diekspor.');
+      return;
+    }
+    const headers = [
+      'Kode Reservasi',
+      'Tanggal Dibuat',
+      'Nama Penyewa',
+      'Nomor WhatsApp',
+      'Model Kendaraan',
+      'Nomor Polisi',
+      'Tipe Layanan',
+      'Tanggal Mulai',
+      'Tanggal Selesai',
+      'Durasi (Hari)',
+      'Lokasi Penyerahan',
+      'Lokasi Pengembalian',
+      'Total Tarif (Rp)',
+      'Status Pesanan',
+      'Status Pembayaran',
+      'Catatan Khusus',
+    ];
+    const esc = (s: any) => `"${String(s || '').replace(/"/g, '""')}"`;
+    const rows = items.map((i) => [
+      esc(i.inquiryCode),
+      esc(fmtDate(i.createdAt)),
+      esc(i.customerName),
+      esc(i.customerPhone),
+      esc(i.vehicleName),
+      esc('-'),
+      esc(i.serviceType === 'LEPAS_KUNCI' ? 'Lepas Kunci' : 'Dengan Sopir'),
+      esc(i.startDate),
+      esc(i.endDate),
+      i.durationDays,
+      esc(i.pickupLocation),
+      esc(i.returnLocation || i.pickupLocation),
+      i.estimatedTotal,
+      esc(STATUS_LABEL[i.status] || i.status),
+      esc(i.paymentStatus || 'UNPAID'),
+      esc(i.customerNotes),
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const timestamp = toDateStr(new Date());
+    downloadCsv(`electra_pesanan_${timestamp}.csv`, csvContent);
+    toast.success(`${items.length} data reservasi berhasil diekspor ke CSV!`);
+  };
+
   const resetFilters = () => {
     setFilter('ALL');
     setFlags([]);
@@ -162,18 +216,38 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
         title="Pesanan"
         subtitle="Kelola reservasi pelanggan: konfirmasi, driver, pembayaran, serah terima, dan pengembalian."
         right={
-          canTable ? (
-            <View style={styles.viewToggle}>
-              <TouchableOpacity style={[styles.viewBtn, !showTable && styles.viewBtnActive]} onPress={() => setView('cards')} accessibilityRole="button" accessibilityLabel="Tampilan kartu" accessibilityState={{ selected: !showTable }}>
-                <LayoutList size={17} color={!showTable ? '#FFFFFF' : T.inkSoft} />
-                <Text style={[styles.viewBtnText, !showTable && { color: '#FFFFFF' }]}>Kartu</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.viewBtn, showTable && styles.viewBtnActive]} onPress={() => setView('table')} accessibilityRole="button" accessibilityLabel="Tampilan tabel" accessibilityState={{ selected: showTable }}>
-                <Table2 size={17} color={showTable ? '#FFFFFF' : T.inkSoft} />
-                <Text style={[styles.viewBtnText, showTable && { color: '#FFFFFF' }]}>Tabel</Text>
-              </TouchableOpacity>
-            </View>
-          ) : undefined
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <TouchableOpacity
+              style={styles.btnAddManual}
+              onPress={() => setShowManualBooking(true)}
+              activeOpacity={0.85}
+            >
+              <Plus size={15} color="#FFFFFF" />
+              <Text style={styles.btnAddManualText}>+ Tambah Pesanan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.btnExportCsv}
+              onPress={handleExportCsv}
+              activeOpacity={0.85}
+            >
+              <Download size={15} color={T.brand} />
+              <Text style={styles.btnExportCsvText}>Ekspor CSV</Text>
+            </TouchableOpacity>
+
+            {canTable && (
+              <View style={styles.viewToggle}>
+                <TouchableOpacity style={[styles.viewBtn, !showTable && styles.viewBtnActive]} onPress={() => setView('cards')} accessibilityRole="button" accessibilityLabel="Tampilan kartu" accessibilityState={{ selected: !showTable }}>
+                  <LayoutList size={16} color={!showTable ? '#FFFFFF' : T.inkSoft} />
+                  <Text style={[styles.viewBtnText, !showTable && { color: '#FFFFFF' }]}>Kartu</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.viewBtn, showTable && styles.viewBtnActive]} onPress={() => setView('table')} accessibilityRole="button" accessibilityLabel="Tampilan tabel" accessibilityState={{ selected: showTable }}>
+                  <Table2 size={16} color={showTable ? '#FFFFFF' : T.inkSoft} />
+                  <Text style={[styles.viewBtnText, showTable && { color: '#FFFFFF' }]}>Tabel</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         }
       />
 
@@ -260,6 +334,7 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
                   onToggle={() => setExpandedId(expandedId === inq.id ? null : inq.id)}
                   onChanged={reload}
                   onUnauthorized={onUnauthorized}
+                  onOpenInvoice={() => setInvoiceInquiry(inq)}
                 />
               ))}
             </Card>
@@ -272,6 +347,7 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
                 onToggle={() => setExpandedId(expandedId === inq.id ? null : inq.id)}
                 onChanged={reload}
                 onUnauthorized={onUnauthorized}
+                onOpenInvoice={() => setInvoiceInquiry(inq)}
               />
             ))
           )}
@@ -282,6 +358,20 @@ export const AdminInquiries: React.FC<Props> = ({ onUnauthorized, focus, initial
           )}
         </View>
       )}
+      <ManualBookingModal
+        visible={showManualBooking}
+        onClose={() => setShowManualBooking(false)}
+        onCreated={(newInq) => {
+          reload();
+          setExpandedId(newInq.id);
+        }}
+      />
+
+      <InvoiceModal
+        visible={!!invoiceInquiry}
+        inquiry={invoiceInquiry}
+        onClose={() => setInvoiceInquiry(null)}
+      />
     </View>
   );
 };
@@ -298,7 +388,7 @@ const TABLE_COLS = [
   { key: 'total', label: 'TOTAL', style: { width: 110, textAlign: 'right' as const } },
 ];
 
-const InquiryRow: React.FC<{ inquiry: AdminInquiry; expanded: boolean; onToggle: () => void; onChanged: () => void; onUnauthorized: () => void }> = ({ inquiry: i, expanded, onToggle, onChanged, onUnauthorized }) => {
+const InquiryRow: React.FC<{ inquiry: AdminInquiry; expanded: boolean; onToggle: () => void; onChanged: () => void; onUnauthorized: () => void; onOpenInvoice: () => void }> = ({ inquiry: i, expanded, onToggle, onChanged, onUnauthorized, onOpenInvoice }) => {
   const pay = i.paymentStatus ? PAY_PILL[i.paymentStatus] : null;
   return (
     <View style={[styles.tRowWrap, expanded && { backgroundColor: T.surfaceAlt }]}>
@@ -324,7 +414,7 @@ const InquiryRow: React.FC<{ inquiry: AdminInquiry; expanded: boolean; onToggle:
       </TouchableOpacity>
       {expanded && (
         <View style={styles.tDetail}>
-          <InquiryDetail inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} />
+          <InquiryDetail inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} onOpenInvoice={onOpenInvoice} />
         </View>
       )}
     </View>
@@ -339,7 +429,8 @@ const InquiryCard: React.FC<{
   onToggle: () => void;
   onChanged: () => void;
   onUnauthorized: () => void;
-}> = ({ inquiry: i, expanded, onToggle, onChanged, onUnauthorized }) => {
+  onOpenInvoice: () => void;
+}> = ({ inquiry: i, expanded, onToggle, onChanged, onUnauthorized, onOpenInvoice }) => {
   const { width } = useWindowDimensions();
   const narrow = width < 560;
   const [busy, setBusy] = useState(false);
@@ -391,7 +482,7 @@ const InquiryCard: React.FC<{
 
       {expanded && (
         <View style={styles.detail}>
-          <InquiryDetail inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} />
+          <InquiryDetail inquiry={i} onChanged={onChanged} onUnauthorized={onUnauthorized} onOpenInvoice={onOpenInvoice} />
         </View>
       )}
     </Card>
@@ -438,7 +529,7 @@ const StatusStepper: React.FC<{ status: InquiryStatus }> = ({ status }) => {
 
 // ---------- Isi detail (dipakai kartu & tabel) ----------
 
-const InquiryDetail: React.FC<{ inquiry: AdminInquiry; onChanged: () => void; onUnauthorized: () => void }> = ({ inquiry: i, onChanged, onUnauthorized }) => {
+const InquiryDetail: React.FC<{ inquiry: AdminInquiry; onChanged: () => void; onUnauthorized: () => void; onOpenInvoice?: () => void }> = ({ inquiry: i, onChanged, onUnauthorized, onOpenInvoice }) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -560,6 +651,15 @@ const InquiryDetail: React.FC<{ inquiry: AdminInquiry; onChanged: () => void; on
               small
               onPress={() => openExternal(googleCalendarLink(i))}
             />
+            {onOpenInvoice && (
+              <Btn
+                label="Cetak Kuitansi / Invoice"
+                icon={FileText}
+                variant="secondary"
+                small
+                onPress={onOpenInvoice}
+              />
+            )}
             {i.status === 'PENDING_WHATSAPP' && (
               <Btn
                 label="Konfirmasi 1-Klik"
@@ -697,4 +797,34 @@ const styles = StyleSheet.create({
   customerNotesBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 8, padding: 10, marginTop: 4 },
   customerNotesLabel: { fontSize: 10.5, fontWeight: '800', color: '#92400E', marginBottom: 2 },
   customerNotesText: { fontSize: 12, color: '#78350F', lineHeight: 17 },
+  btnAddManual: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: T.brand,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  btnAddManualText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  btnExportCsv: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  btnExportCsvText: {
+    color: T.brand,
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
 });

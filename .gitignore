@@ -43,3 +43,8 @@ scratch/
 
 # Data operasional lokal (JSON store)
 backend/data/
+
+
+# Internal requirement docs & design mockups
+PRD-SamMotor.md
+stitch_design/

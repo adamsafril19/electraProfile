@@ -46,6 +46,7 @@ import {
   rp,
 } from './ui';
 import { T, shadow } from './theme';
+import { AddVehicleModal } from './AddVehicleModal';
 import { toast } from './feedback';
 
 type VehicleStatus = 'AVAILABLE' | 'BOOKED' | 'MAINTENANCE';
@@ -73,6 +74,7 @@ export const AdminFleet: React.FC<{ onUnauthorized: () => void }> = ({ onUnautho
   // Filter & Search states
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'HIDDEN'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -168,7 +170,7 @@ export const AdminFleet: React.FC<{ onUnauthorized: () => void }> = ({ onUnautho
               icon={Car}
               variant="primary"
               small
-              onPress={() => toast.info('Fitur pendaftaran mobil baru akan segera hadir.')}
+              onPress={() => setShowAddModal(true)}
             />
           </>
         }
@@ -338,6 +340,12 @@ export const AdminFleet: React.FC<{ onUnauthorized: () => void }> = ({ onUnautho
           ))}
         </View>
       )}
+
+      <AddVehicleModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onCreated={() => load()}
+      />
     </View>
   );
 };

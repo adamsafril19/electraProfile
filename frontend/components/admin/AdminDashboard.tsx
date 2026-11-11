@@ -62,6 +62,8 @@ import {
 } from './ui';
 import { confirmInquiryFlow } from './inquiryActions';
 import { T, shadow } from './theme';
+import { RevenueBookingChart } from './RevenueBookingChart';
+import { FleetOccupancyGauge } from './FleetOccupancyGauge';
 
 interface Props {
   onUnauthorized: () => void;
@@ -490,6 +492,18 @@ export const AdminDashboard: React.FC<Props> = ({ onUnauthorized, onOpenInquiry,
             </VStack>
           </VStack>
         </Pressable>
+      </View>
+
+      {/* ======================================================== */}
+      {/* 3.5 VISUAL ANALYTICS & FLEET TELEMETRY (Paket B)        */}
+      {/* ======================================================== */}
+      <View style={styles.analyticsSection}>
+        <View style={styles.chartCol}>
+          <RevenueBookingChart summary={data} finance={fin} />
+        </View>
+        <View style={styles.gaugeCol}>
+          <FleetOccupancyGauge fleet={fleet} onNavigate={onNavigate} />
+        </View>
       </View>
 
       {/* ======================================================== */}
@@ -1111,6 +1125,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#64748B',
+  },
+
+  // Visual Analytics (Paket B)
+  analyticsSection: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 18,
+    alignItems: 'stretch',
+  },
+  chartCol: {
+    flex: 1.6,
+    minWidth: 320,
+  },
+  gaugeCol: {
+    flex: 1,
+    minWidth: 300,
   },
 
   // Operational Layout

@@ -787,6 +787,8 @@ const TimelineSection: React.FC<{
 }> = ({ monthStart, daysInMonth, today, events, timeOff, fleet, drivers, rowMode, selectedEventId, onSelect }) => {
   const monthEnd = addDays(monthStart, daysInMonth);
   const days = Array.from({ length: daysInMonth }, (_, i) => addDays(monthStart, i));
+  const todayIdx = days.indexOf(today);
+  const todayLeft = todayIdx >= 0 ? todayIdx * CELL_W + Math.floor(CELL_W / 2) : -1;
 
   const rows: { id: string; label: string; sub?: string }[] =
     rowMode === 'UNIT'
@@ -837,6 +839,11 @@ const TimelineSection: React.FC<{
         <View style={adminStyles.row}>
           <Layers size={18} color={T.brand} />
           <Text style={styles.tlSectionTitle}>Timeline Disposisi Armada (Gantt Chart)</Text>
+          <View style={{ backgroundColor: '#E0F2FE', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, marginLeft: 8 }}>
+            <Text style={{ color: '#0369A1', fontSize: 11, fontWeight: '700' }}>
+              📍 Garis Penanda Hari Ini Aktif
+            </Text>
+          </View>
         </View>
         <Text style={styles.tlScaleHint}>Skala: 1 Hari / Kolom</Text>
       </View>
@@ -859,7 +866,47 @@ const TimelineSection: React.FC<{
 
         {/* Kolom Scroll Kanan: Tanggal & Bar Durasi */}
         <ScrollView horizontal showsHorizontalScrollIndicator style={{ flex: 1 }}>
-          <View style={{ width: daysInMonth * CELL_W }}>
+          <View style={{ width: daysInMonth * CELL_W, position: 'relative' }}>
+            {/* Garis Penanda Hari Ini (Marker Now) Melintasi Seluruh Baris Timeline */}
+            {todayLeft >= 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  left: todayLeft - 1,
+                  top: 0,
+                  bottom: 0,
+                  width: 2,
+                  backgroundColor: '#0284C7',
+                  zIndex: 25,
+                  pointerEvents: 'none',
+                }}
+              >
+                {/* Pin Badge Hari Ini */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    left: -20,
+                    width: 42,
+                    height: 16,
+                    borderRadius: 4,
+                    backgroundColor: '#0284C7',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 2,
+                    elevation: 3,
+                  }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 8, fontWeight: '900', letterSpacing: 0.4 }}>
+                    HARI INI
+                  </Text>
+                </View>
+              </View>
+            )}
+
             <View style={[styles.tlHead, { flexDirection: 'row' }]}>
               {days.map((d) => {
                 const dow = (parse(d).getDay() + 6) % 7;

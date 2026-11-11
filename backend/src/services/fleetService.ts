@@ -169,6 +169,120 @@ export class FleetService {
     return vehicle;
   }
 
+  
+  public async createVehicle(input: any): Promise<Vehicle> {
+    const slugBase = `${input.brand}-${input.model}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    let slug = slugBase;
+    let counter = 1;
+
+    try {
+      while (await prisma.vehicle.findUnique({ where: { slug } })) {
+        slug = `${slugBase}-${counter++}`;
+      }
+    } catch {
+      while (this.fallbackFleet.some((v) => v.slug === slug)) {
+        slug = `${slugBase}-${counter++}`;
+      }
+    }
+
+    const defaultImages: Record<string, string> = {
+      CITY_CAR: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=800&auto=format&fit=crop',
+      COMPACT_SUV: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop',
+      MPV: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?q=80&w=800&auto=format&fit=crop',
+    };
+
+    const imageUrl = input.imageUrl || defaultImages[input.bodyType] || defaultImages.CITY_CAR;
+    const thumbnailUrl = input.thumbnailUrl || imageUrl;
+
+    try {
+      const created = await prisma.vehicle.create({
+        data: {
+          slug,
+          brand: input.brand,
+          model: input.model,
+          bodyType: input.bodyType,
+          licensePlate: input.licensePlate.toUpperCase(),
+          imageUrl,
+          thumbnailUrl,
+          status: input.status || 'AVAILABLE',
+          isActive: true,
+          tags: input.tags && input.tags.length > 0 ? input.tags : ['EV', input.brand, input.bodyType],
+          specs: {
+            create: {
+              batteryCapacityKwh: Number(input.specs.batteryCapacityKwh),
+              rangeCltcKm: Number(input.specs.rangeCltcKm),
+              portType: input.specs.portType || 'CCS2',
+              maxAcKw: Number(input.specs.maxAcKw || 7.0),
+              maxDcKw: input.specs.maxDcKw ? Number(input.specs.maxDcKw) : null,
+              seatingCapacity: Number(input.specs.seatingCapacity || 5),
+              portableChargerIncluded: input.specs.portableChargerIncluded ?? true,
+              gbtAdapterIncluded: input.specs.gbtAdapterIncluded ?? false,
+              chargingTimeAcHours: Number(input.specs.chargingTimeAcHours || 6.0),
+              chargingTimeDcMinutes: input.specs.chargingTimeDcMinutes ? Number(input.specs.chargingTimeDcMinutes) : null,
+            },
+          },
+          rates: {
+            create: input.rates.map((r: any) => ({
+              serviceType: r.serviceType,
+              dailyRate: Number(r.dailyRate),
+              depositAmount: Number(r.depositAmount || (input.bodyType === 'CITY_CAR' ? 500000 : 1000000)),
+              overtimeHourlyRate: Number(r.overtimeHourlyRate || Math.round(Number(r.dailyRate) * 0.1)),
+            })),
+          },
+        },
+        include: { specs: true, rates: true },
+      });
+
+      const mapped = this.mapDbVehicleToType(created);
+      this.fallbackFleet.push(mapped);
+      return mapped;
+    } catch (err: any) {
+      console.warn('⚠️ [FleetService] Create vehicle via DB gagal, memakai in-memory fallback:', err.message);
+    }
+
+    const id = `veh-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const newVeh: Vehicle = {
+      id,
+      slug,
+      brand: input.brand,
+      model: input.model,
+      bodyType: input.bodyType,
+      licensePlate: input.licensePlate.toUpperCase(),
+      imageUrl,
+      thumbnailUrl,
+      status: input.status || 'AVAILABLE',
+      isActive: true,
+      tags: input.tags && input.tags.length > 0 ? input.tags : ['EV', input.brand, input.bodyType],
+      specs: {
+        batteryCapacityKwh: Number(input.specs.batteryCapacityKwh),
+        rangeCltcKm: Number(input.specs.rangeCltcKm),
+        portType: input.specs.portType || 'CCS2',
+        maxAcKw: Number(input.specs.maxAcKw || 7.0),
+        maxDcKw: input.specs.maxDcKw ? Number(input.specs.maxDcKw) : undefined,
+        seatingCapacity: Number(input.specs.seatingCapacity || 5),
+        portableChargerIncluded: input.specs.portableChargerIncluded ?? true,
+        gbtAdapterIncluded: input.specs.gbtAdapterIncluded ?? false,
+        chargingTimeAcHours: Number(input.specs.chargingTimeAcHours || 6.0),
+        chargingTimeDcMinutes: input.specs.chargingTimeDcMinutes ? Number(input.specs.chargingTimeDcMinutes) : undefined,
+      },
+      rates: input.rates.map((r: any) => ({
+        serviceType: r.serviceType,
+        dailyRate: Number(r.dailyRate),
+        depositAmount: Number(r.depositAmount || (input.bodyType === 'CITY_CAR' ? 500000 : 1000000)),
+        overtimeHourlyRate: Number(r.overtimeHourlyRate || Math.round(Number(r.dailyRate) * 0.1)),
+      })),
+    };
+
+    this.fallbackFleet.push(newVeh);
+    store.data.fleetOverrides[id] = {
+      isActive: true,
+      status: newVeh.status,
+      rates: newVeh.rates.map(r => ({ serviceType: r.serviceType, dailyRate: r.dailyRate, depositAmount: r.depositAmount })),
+    };
+    store.save();
+    return newVeh;
+  }
+
   private mapDbVehicleToType(v: any): Vehicle {
     return {
       id: v.id,

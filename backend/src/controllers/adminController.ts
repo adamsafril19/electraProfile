@@ -26,6 +26,7 @@ import {
   adminLoginSchema,
   listInquiriesQuerySchema,
   updateInquiryStatusSchema,
+  createVehicleSchema,
   updateVehicleSchema
 } from '../validators/adminValidator';
 
@@ -129,6 +130,16 @@ export class AdminController {
     try {
       const vehicles = await fleetService.listAllForAdmin();
       return res.status(200).json({ success: true, count: vehicles.length, data: vehicles });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public static async createVehicle(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = createVehicleSchema.parse(req.body);
+      const vehicle = await fleetService.createVehicle(data);
+      return res.status(201).json({ success: true, message: 'Armada baru berhasil didaftarkan', data: vehicle });
     } catch (error) {
       next(error);
     }

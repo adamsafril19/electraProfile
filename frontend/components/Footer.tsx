@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '../constants/colors';
+import { useLanguage } from '../context/LanguageContext';
 
 export const Footer: React.FC = () => {
   const router = useRouter();
+  const { locale, t } = useLanguage();
 
   const handleOpenEmergency = () => {
     const phoneUrl = 'tel:081234567890';
@@ -21,11 +23,11 @@ export const Footer: React.FC = () => {
       <View style={styles.preFooter}>
         <View style={styles.preFooterInner}>
           <View style={styles.preFooterText}>
-            <Text style={styles.preFooterLabel}>BUTUH BANTUAN OPERASIONAL ATAU DEREK DARURAT?</Text>
-            <Text style={styles.preFooterTitle}>Layanan Call Center & Emergency Roadside Siaga 24 Jam</Text>
+            <Text style={styles.preFooterLabel}>{t('BUTUH BANTUAN OPERASIONAL ATAU DEREK DARURAT?', 'NEED OPERATIONAL SUPPORT OR EMERGENCY TOWING?')}</Text>
+            <Text style={styles.preFooterTitle}>{t('Layanan Call Center & Emergency Roadside Siaga 24 Jam', '24/7 Call Center & Emergency Roadside Assistance On-Duty')}</Text>
           </View>
           <TouchableOpacity style={styles.preFooterCallBtn} onPress={handleOpenEmergency}>
-            <Text style={styles.preFooterCallBtnText}>Hubungi Hotline 0812-3456-7890</Text>
+            <Text style={styles.preFooterCallBtnText}>{t('Hubungi Hotline 0812-3456-7890', 'Call Hotline 0812-3456-7890')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -42,44 +44,44 @@ export const Footer: React.FC = () => {
               <Text style={styles.brandTitle}>ELECTRA</Text>
             </View>
             <Text style={styles.brandDesc}>
-              Penyedia layanan rental kendaraan listrik (EV) mandiri terdepan dengan standar operasional korporat teruji untuk wisatawan dan konsumen retail.
+              {t('Penyedia layanan rental kendaraan listrik (EV) mandiri terdepan dengan standar operasional korporat teruji untuk wisatawan dan konsumen retail.', 'Leading electric vehicle (EV) self-drive rental provider with proven corporate operating standards for tourists and retail consumers.')}
             </Text>
-            <Text style={styles.contactItem}>Pool Pusat: Jl. Bypass Ngurah Rai No. 88, Bali</Text>
-            <Text style={styles.contactItem}>Jam Operasional Admin: 07.00 - 23.00 WITA</Text>
-            <Text style={styles.contactItem}>Layanan Darurat: 24 Jam Nonstop</Text>
+            <Text style={styles.contactItem}>{t('Pool Pusat: Jl. Bypass Ngurah Rai No. 88, Bali', 'Main Depot: Jl. Bypass Ngurah Rai No. 88, Bali')}</Text>
+            <Text style={styles.contactItem}>{t('Jam Operasional Admin: 07.00 - 23.00 WITA', 'Admin Hours: 07:00 AM - 11:00 PM WITA')}</Text>
+            <Text style={styles.contactItem}>{t('Layanan Darurat: 24 Jam Nonstop', 'Emergency Assistance: 24 Hours Nonstop')}</Text>
           </View>
 
           {/* Nav Column 1 */}
           <View style={styles.colNav}>
-            <Text style={styles.colHeader}>Layanan & Armada</Text>
+            <Text style={styles.colHeader}>{t('Layanan & Armada', 'Services & Fleet')}</Text>
             <TouchableOpacity onPress={() => router.push('/armada')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Katalog Mobil Listrik</Text>
+              <Text style={styles.footerLinkText}>{t('Katalog Mobil Listrik', 'Electric Fleet Catalog')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/armada')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Sewa Lepas Kunci (24 Jam)</Text>
+              <Text style={styles.footerLinkText}>{t('Sewa Lepas Kunci (24 Jam)', 'Self-Drive Rental (24h)')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/armada')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Sewa Dengan Pengemudi</Text>
+              <Text style={styles.footerLinkText}>{t('Sewa Dengan Pengemudi', 'Rental With Chauffeur')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/panduan-ev')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Panduan Charging & SPKLU</Text>
+              <Text style={styles.footerLinkText}>{t('Panduan Charging & SPKLU', 'Charging & SPKLU Guide')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Nav Column 2 */}
           <View style={styles.colNav}>
-            <Text style={styles.colHeader}>Standar & Kebijakan</Text>
+            <Text style={styles.colHeader}>{t('Standar & Kebijakan', 'Standards & Policies')}</Text>
             <TouchableOpacity onPress={() => router.push('/syarat-ketentuan')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Syarat Verifikasi Dokumen</Text>
+              <Text style={styles.footerLinkText}>{t('Syarat Verifikasi Dokumen', 'Document Verification Terms')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/syarat-ketentuan')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Aturan State of Charge (SoC)</Text>
+              <Text style={styles.footerLinkText}>{t('Aturan State of Charge (SoC)', 'State of Charge (SoC) Rules')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/bantuan-darurat')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Garansi Mobil Pengganti</Text>
+              <Text style={styles.footerLinkText}>{t('Garansi Mobil Pengganti', 'Replacement Car Guarantee')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/bantuan-darurat')} style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>Layanan Derek Darurat 24 Jam</Text>
+              <Text style={styles.footerLinkText}>{t('Layanan Derek Darurat 24 Jam', '24/7 Emergency Towing Service')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -87,10 +89,10 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <View style={styles.bottomBar}>
           <Text style={styles.copyrightText}>
-            © 2026 Electra Mobility Indonesia. Seluruh hak cipta dilindungi.
+            {t('© 2026 Electra Mobility Indonesia. Seluruh hak cipta dilindungi.', '© 2026 Electra Mobility Indonesia. All rights reserved.')}
           </Text>
           <Text style={styles.legalSub}>
-            Semua armada diasuransikan, terawat berkala, dan dilengkapi charger portable.
+            {t('Semua armada diasuransikan, terawat berkala, dan dilengkapi charger portable.', 'All fleet insured, regularly serviced, and equipped with a portable charger.')}
           </Text>
         </View>
       </View>

@@ -257,6 +257,27 @@ export class FinanceService {
     }
     receivables.sort((a, b) => a.startDate.localeCompare(b.startDate));
 
+    // Antrean pengembalian deposit (Unit selesai atau reservasi dibatalkan tapi deposit masih tertahan)
+    const refundQueue: any[] = [];
+    for (const i of l.all) {
+      const fin = FinanceService.inquiryFinance(i);
+      if (fin.depositHeld > 0 && (i.status === 'COMPLETED' || i.status === 'CANCELLED')) {
+        refundQueue.push({
+          id: i.id,
+          inquiryCode: i.inquiryCode,
+          customerName: i.customerName,
+          customerPhone: i.customerPhone,
+          vehicleName: i.vehicleName,
+          status: i.status,
+          endDate: i.endDate,
+          depositPaid: fin.depositPaid,
+          depositRefunded: fin.depositRefunded,
+          depositHeld: fin.depositHeld,
+        });
+      }
+    }
+    refundQueue.sort((a, b) => b.endDate.localeCompare(a.endDate));
+
     // Deret waktu: harian bila rentang <= 62 hari, selain itu bulanan
     const days = Math.round((Date.parse(to) - Date.parse(from)) / 86400000) + 1;
     const monthly = days > 62;

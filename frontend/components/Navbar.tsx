@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Pressable, StyleSheet, Linking, Platform, useWindowDimensions } from 'react-native';
 import { MessageCircle } from 'lucide-react-native';
 import { useRouter, usePathname } from 'expo-router';
+import { useLanguage } from '../context/LanguageContext';
 import { COLORS } from '../constants/colors';
 
 export const Navbar: React.FC = () => {
@@ -11,6 +12,7 @@ export const Navbar: React.FC = () => {
   const isCompact = width < 1024;
   const isPhone = width < 640;
   const [menuOpen, setMenuOpen] = useState(false);
+  const { locale, setLocale, t } = useLanguage();
 
   const navigate = (path: string) => {
     setMenuOpen(false);
@@ -18,11 +20,11 @@ export const Navbar: React.FC = () => {
   };
 
   const navItems = [
-    { label: 'Beranda', path: '/' },
-    { label: 'Armada EV', path: '/armada' },
-    { label: 'Panduan & SPKLU', path: '/panduan-ev' },
-    { label: 'Syarat & Ketentuan', path: '/syarat-ketentuan' },
-    { label: 'Layanan Darurat', path: '/bantuan-darurat' },
+    { label: t('Beranda', 'Home'), path: '/' },
+    { label: t('Armada EV', 'EV Fleet'), path: '/armada' },
+    { label: t('Panduan & SPKLU', 'Guide & SPKLU'), path: '/panduan-ev' },
+    { label: t('Syarat & Ketentuan', 'Terms & Conditions'), path: '/syarat-ketentuan' },
+    { label: t('Layanan Darurat', 'Emergency Service'), path: '/bantuan-darurat' },
   ];
 
   const handleOpenWA = () => {
@@ -68,7 +70,7 @@ export const Navbar: React.FC = () => {
                   <Text style={styles.badge247Text}>24/7</Text>
                 </View>
                 <View style={styles.callTextCol}>
-                  <Text style={styles.callLabel}>Call Center</Text>
+                  <Text style={styles.callLabel}>{t('Call Center', 'Call Center')}</Text>
                   <Text style={styles.callNumber}>0812-3456-7890</Text>
                 </View>
               </TouchableOpacity>
@@ -98,6 +100,33 @@ export const Navbar: React.FC = () => {
           )}
 
           <View style={styles.rightGroup}>
+            {!isPhone && (
+              <View style={styles.langPill}>
+                <TouchableOpacity
+                  style={[styles.langItem, locale === 'id' && styles.langActiveCircle]}
+                  onPress={() => setLocale('id')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Ganti ke Bahasa Indonesia"
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.langItemText, locale === 'id' ? styles.langActiveText : styles.langMutedText]}>
+                    ID
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.langItem, locale === 'en' && styles.langActiveCircle]}
+                  onPress={() => setLocale('en')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Switch to English"
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.langItemText, locale === 'en' ? styles.langActiveText : styles.langMutedText]}>
+                    EN
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* WhatsApp Action Button */}
             <TouchableOpacity
               style={[styles.ctaWa, isPhone && styles.ctaWaIcon]}
@@ -110,7 +139,7 @@ export const Navbar: React.FC = () => {
               ) : (
                 <>
                   <View style={styles.waDot} />
-                  <Text style={styles.ctaWaText}>Konsultasi WhatsApp</Text>
+                  <Text style={styles.ctaWaText}>{t('Konsultasi WhatsApp', 'WhatsApp Inquiry')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -132,12 +161,36 @@ export const Navbar: React.FC = () => {
         {/* Mobile Dropdown Menu */}
         {isCompact && menuOpen && (
           <View style={styles.mobileMenu}>
+            <View style={styles.mobileLangRow}>
+              <Text style={styles.mobileLangLabel}>{t('Pilih Bahasa / Language:', 'Language / Bahasa:')}</Text>
+              <View style={styles.langPill}>
+                <TouchableOpacity
+                  style={[styles.langItem, locale === 'id' && styles.langActiveCircle]}
+                  onPress={() => setLocale('id')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.langItemText, locale === 'id' ? styles.langActiveText : styles.langMutedText]}>
+                    ID
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.langItem, locale === 'en' && styles.langActiveCircle]}
+                  onPress={() => setLocale('en')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.langItemText, locale === 'en' ? styles.langActiveText : styles.langMutedText]}>
+                    EN
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <TouchableOpacity style={styles.mobileCallPill} onPress={handleCallCenter}>
               <View style={styles.badge247}>
                 <Text style={styles.badge247Text}>24/7</Text>
               </View>
               <View style={styles.callTextCol}>
-                <Text style={styles.callLabel}>Call Center 24 Jam</Text>
+                <Text style={styles.callLabel}>{t('Call Center 24 Jam', '24/7 Call Center')}</Text>
                 <Text style={styles.callNumber}>0812-3456-7890</Text>
               </View>
             </TouchableOpacity>
@@ -390,5 +443,52 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  langPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+  },
+  langItem: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  langActiveCircle: {
+    backgroundColor: '#FFFFFF',
+  },
+  langItemText: {
+    fontSize: 11,
+  },
+  langActiveText: {
+    fontWeight: '800',
+    color: '#0B1C30',
+  },
+  langMutedText: {
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.65)',
+  },
+  mobileLangRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  mobileLangLabel: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.75)',
   },
 });

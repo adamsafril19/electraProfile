@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import Head from 'expo-router/head';
 import { BatteryCharging, Check, ChevronLeft, Gauge, MessageCircle, PlugZap, ShieldCheck, Users, Zap } from 'lucide-react-native';
 import { COLORS } from '../../constants/colors';
+import { useLanguage } from '../../context/LanguageContext';
 import { Vehicle } from '../../types/fleet';
 import { fetchVehicleResult } from '../../services/api';
 import { OfflineBanner } from '../../components/OfflineBanner';
@@ -15,6 +16,7 @@ import { FadeIn } from '../../components/FadeIn';
 import { getDateError, todayStr } from '../../utils/date';
 
 export default function VehicleDetailScreen() {
+  const { locale, t } = useLanguage();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -61,9 +63,9 @@ export default function VehicleDetailScreen() {
   if (!vehicle) {
     return (
       <View style={styles.centerBox}>
-        <Text style={styles.notFoundText}>Unit kendaraan tidak ditemukan</Text>
+        <Text style={styles.notFoundText}>{t('Unit kendaraan tidak ditemukan', 'Vehicle unit not found')}</Text>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.push('/armada')}>
-          <Text style={styles.backBtnText}>← Kembali ke Katalog</Text>
+          <Text style={styles.backBtnText}>{t('← Kembali ke Katalog', '← Back to Catalog')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -75,10 +77,10 @@ export default function VehicleDetailScreen() {
   const totalPrice = currentPrice * durationDays;
 
   const highlights = [
-    { icon: Gauge, label: 'Jarak tempuh', value: `± ${vehicle.specs.rangeCltcKm} km` },
-    { icon: BatteryCharging, label: 'Baterai', value: `${vehicle.specs.batteryCapacityKwh} kWh` },
-    { icon: PlugZap, label: 'Port colokan', value: String(vehicle.specs.portType).replace('_', '/') },
-    { icon: Users, label: 'Kapasitas', value: `${vehicle.specs.seatingCapacity} penumpang` },
+    { icon: Gauge, label: t('Jarak tempuh', 'Driving Range'), value: `± ${vehicle.specs.rangeCltcKm} km` },
+    { icon: BatteryCharging, label: t('Baterai', 'Battery'), value: `${vehicle.specs.batteryCapacityKwh} kWh` },
+    { icon: PlugZap, label: t('Port colokan', 'Charging Port'), value: String(vehicle.specs.portType).replace('_', '/') },
+    { icon: Users, label: t('Kapasitas', 'Capacity'), value: `${vehicle.specs.seatingCapacity} ${t('penumpang', 'passengers')}` },
   ];
 
   const inclusions = (
@@ -86,34 +88,34 @@ export default function VehicleDetailScreen() {
             <View style={[styles.incCard, styles.incOk]}>
               <View style={styles.incHeadRow}>
                 <ShieldCheck size={18} color="#15803D" />
-                <Text style={styles.incHeaderSuccess}>Fasilitas termasuk dalam tarif</Text>
+                <Text style={styles.incHeaderSuccess}>{t('Fasilitas termasuk dalam tarif', 'Inclusions in Rental Rate')}</Text>
               </View>
               {[
-                'Pemakaian unit 24 jam penuh per hari sewa (Lepas Kunci)',
-                'Level baterai diserahkan minimal 80% hingga 100%',
-                'Portable Home Charger 2.2 kW dan kabel arde grounding',
-                'Garansi pengiriman kendaraan pengganti jika terjadi kendala teknis',
-                'Layanan derek darurat 24 jam Roadside Assistance',
-              ].map((t) => (
-                <View key={t} style={styles.incRow}>
+                t('Pemakaian unit 24 jam penuh per hari sewa (Lepas Kunci)', 'Full 24-hour daily usage per rental day (Self-Drive)'),
+                t('Level baterai diserahkan minimal 80% hingga 100%', 'Delivered with 80% to 100% initial battery SoC'),
+                t('Portable Home Charger 2.2 kW dan kabel arde grounding', '2.2 kW Portable Home Charger and grounding cable included'),
+                t('Garansi pengiriman kendaraan pengganti jika terjadi kendala teknis', 'Replacement vehicle guarantee in case of technical issues'),
+                t('Layanan derek darurat 24 jam Roadside Assistance', '24/7 Roadside Assistance and emergency towing'),
+              ].map((itemText) => (
+                <View key={itemText} style={styles.incRow}>
                   <Check size={15} color="#15803D" style={{ marginTop: 3 }} />
-                  <Text style={styles.incItem}>{t}</Text>
+                  <Text style={styles.incItem}>{itemText}</Text>
                 </View>
               ))}
             </View>
 
             <View style={[styles.incCard, styles.incNo]}>
               <View style={styles.incHeadRow}>
-                <Text style={styles.incHeaderMuted}>Tidak termasuk</Text>
+                <Text style={styles.incHeaderMuted}>{t('Tidak termasuk', 'Not Included')}</Text>
               </View>
               {[
-                'Biaya pengisian daya di stasiun SPKLU umum berbayar',
-                'Biaya e-toll, bahan parkir, dan retribusi jalan',
-                'Pengantaran unit di luar radius gratis pool (lebih dari 15 km)',
-              ].map((t) => (
-                <View key={t} style={styles.incRow}>
+                t('Biaya pengisian daya di stasiun SPKLU umum berbayar', 'Public paid SPKLU charging fees'),
+                t('Biaya e-toll, bahan parkir, dan retribusi jalan', 'E-toll fees, parking charges, and road levies'),
+                t('Pengantaran unit di luar radius gratis pool (lebih dari 15 km)', 'Vehicle delivery beyond free depot radius (> 15 km)'),
+              ].map((itemText) => (
+                <View key={itemText} style={styles.incRow}>
                   <Text style={styles.incBullet}>•</Text>
-                  <Text style={styles.incItem}>{t}</Text>
+                  <Text style={styles.incItem}>{itemText}</Text>
                 </View>
               ))}
             </View>
@@ -139,7 +141,7 @@ export default function VehicleDetailScreen() {
           {/* Breadcrumb */}
           <TouchableOpacity onPress={() => router.push('/armada')} style={styles.breadcrumb} accessibilityRole="link">
             <ChevronLeft size={16} color={COLORS.brandBlue} />
-            <Text style={styles.breadcrumbText}>Katalog Armada</Text>
+            <Text style={styles.breadcrumbText}>{t('Katalog Armada', 'Fleet Catalog')}</Text>
             <Text style={styles.breadcrumbSep}>/</Text>
             <Text style={styles.breadcrumbCurrent} numberOfLines={1}>
               {vehicle.brand} {vehicle.model}
@@ -181,7 +183,7 @@ export default function VehicleDetailScreen() {
                     <Zap size={18} color="#B45309" />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.chargeTitle}>Pengisian daya</Text>
+                    <Text style={styles.chargeTitle}>{t('Pengisian daya', 'Charging Information')}</Text>
                     <Text style={styles.chargeText}>
                       AC rumah ~{vehicle.specs.chargingTimeAcHours} jam (daya min. 2.200 VA)
                       {vehicle.specs.maxDcKw ? ` • DC cepat hingga ${vehicle.specs.maxDcKw} kW (~${vehicle.specs.chargingTimeDcMinutes || 35} menit ke 80%)` : ''}
@@ -209,7 +211,7 @@ export default function VehicleDetailScreen() {
                       accessibilityRole="button"
                       accessibilityState={{ selected: selectedService === 'LEPAS_KUNCI' }}
                     >
-                      <Text style={[styles.serviceTabText, selectedService === 'LEPAS_KUNCI' && styles.serviceTabTextActive]}>Lepas Kunci (24 Jam)</Text>
+                      <Text style={[styles.serviceTabText, selectedService === 'LEPAS_KUNCI' && styles.serviceTabTextActive]}>{t('Lepas Kunci (24 Jam)', 'Self-Drive (24h)')}</Text>
                     </TouchableOpacity>
                     {driverRate && (
                       <TouchableOpacity
@@ -218,17 +220,17 @@ export default function VehicleDetailScreen() {
                         accessibilityRole="button"
                         accessibilityState={{ selected: selectedService === 'DENGAN_DRIVER' }}
                       >
-                        <Text style={[styles.serviceTabText, selectedService === 'DENGAN_DRIVER' && styles.serviceTabTextActive]}>Dengan Sopir (12 Jam)</Text>
+                        <Text style={[styles.serviceTabText, selectedService === 'DENGAN_DRIVER' && styles.serviceTabTextActive]}>{t('Dengan Sopir (12 Jam)', 'With Chauffeur (12h)')}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
 
                   <View style={styles.priceRow}>
                     <View>
-                      <Text style={styles.priceLabel}>Tarif sewa harian</Text>
+                      <Text style={styles.priceLabel}>{t('Tarif sewa harian', 'Daily Rental Rate')}</Text>
                       <Text style={styles.priceFigure}>
                         Rp {currentPrice.toLocaleString('id-ID')}
-                        <Text style={styles.priceUnit}> / hari</Text>
+                        <Text style={styles.priceUnit}> {t('/ hari', '/ day')}</Text>
                       </Text>
                     </View>
                   </View>

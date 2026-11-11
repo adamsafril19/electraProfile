@@ -233,6 +233,39 @@ export const updateInquiryStatus = (id: string, status: InquiryStatus, force = f
 
 export const fetchAdminFleet = () => request<AdminVehicle[]>('/admin/fleet');
 
+
+export interface CreateVehicleInput {
+  brand: string;
+  model: string;
+  bodyType: 'CITY_CAR' | 'COMPACT_SUV' | 'MPV';
+  licensePlate: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  status?: 'AVAILABLE' | 'BOOKED' | 'MAINTENANCE';
+  tags?: string[];
+  specs: {
+    batteryCapacityKwh: number;
+    rangeCltcKm: number;
+    portType?: 'CCS2' | 'GB_T' | 'TYPE_2';
+    maxAcKw?: number;
+    maxDcKw?: number;
+    seatingCapacity?: number;
+    portableChargerIncluded?: boolean;
+    gbtAdapterIncluded?: boolean;
+    chargingTimeAcHours?: number;
+    chargingTimeDcMinutes?: number;
+  };
+  rates: {
+    serviceType: 'LEPAS_KUNCI' | 'DENGAN_DRIVER';
+    dailyRate: number;
+    depositAmount?: number;
+    overtimeHourlyRate?: number;
+  }[];
+}
+
+export const createVehicle = (data: CreateVehicleInput) =>
+  post<AdminVehicle>('/admin/fleet', data);
+
 export const updateVehicle = (
   id: string,
   changes: {
@@ -419,6 +452,19 @@ export interface InquiryFinance {
   payments: Payment[];
 }
 
+export interface RefundQueueItem {
+  id: string;
+  inquiryCode: string;
+  customerName: string;
+  customerPhone: string;
+  vehicleName: string;
+  status: InquiryStatus;
+  endDate: string;
+  depositPaid: number;
+  depositRefunded: number;
+  depositHeld: number;
+}
+
 export interface FinanceSummary {
   serverTime: string;
   from: string;
@@ -443,6 +489,7 @@ export interface FinanceSummary {
       outstanding: number;
     }[];
   };
+  refundQueue?: RefundQueueItem[];
   series: { label: string; income: number; expense: number }[];
   seriesUnit: 'DAY' | 'MONTH';
 }
@@ -527,3 +574,19 @@ export interface AdminBadges {
   drivers: number;
 }
 export const fetchBadges = () => request<AdminBadges>('/admin/badges');
+
+export interface CreateManualInquiryInput {
+  vehicleId: string;
+  serviceType: 'LEPAS_KUNCI' | 'DENGAN_DRIVER';
+  startDate: string;
+  durationDays: number;
+  pickupLocation: string;
+  returnLocation: string;
+  customerName: string;
+  customerPhone: string;
+  customerNotes?: string;
+}
+
+export const createManualInquiry = async (input: CreateManualInquiryInput) => {
+  return post<{ success: boolean; data: AdminInquiry }>('/inquiries', input, false);
+};

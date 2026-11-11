@@ -587,3 +587,23 @@ const styles = StyleSheet.create({
   infoBox: { backgroundColor: T.infoSoft, borderColor: '#BFDBFE', borderWidth: 1, borderRadius: T.radiusSm, padding: 12 },
   infoText: { color: '#1E3A8A', fontSize: 13, lineHeight: 18 },
 });
+
+export const downloadCsv = (filename: string, csvContent: string) => {
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+};
+
+export const printDocument = () => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    window.print();
+  }
+};

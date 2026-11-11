@@ -47,6 +47,7 @@ import {
   EXPENSE_LABEL,
   ExpenseCategory,
   FinanceSummary,
+  RefundQueueItem,
   LedgerEntry,
   PAYMENT_METHOD_LABEL,
   PAYMENT_TYPE_LABEL,
@@ -73,6 +74,7 @@ import {
 } from './ui';
 import { DateInput } from './DateInput';
 import { T } from './theme';
+import { RefundDepositModal } from './RefundDepositModal';
 import { toast } from './feedback';
 
 interface Props {
@@ -168,6 +170,7 @@ export const AdminFinance: React.FC<Props> = ({ onUnauthorized, onOpenInquiry, a
   const [kind, setKind] = useState<'ALL' | 'IN' | 'OUT'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [selectedRefundItem, setSelectedRefundItem] = useState<RefundQueueItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [live, setLive] = useState(true);
@@ -1009,6 +1012,99 @@ export const AdminFinance: React.FC<Props> = ({ onUnauthorized, onOpenInquiry, a
                     </View>
                   );
                 })}
+              </View>
+            )}
+          </View>
+
+          {/* 6B. PELACAKAN PENGEMBALIAN DEPOSIT JAMINAN (SOP H+1 S/D H+3) */}
+          <View style={styles.receivablesSection}>
+            <View style={styles.receivablesHeader}>
+              <View style={styles.receivablesTitleGroup}>
+                <View style={[styles.pendingIconBox, { backgroundColor: '#DCFCE7' }]}>
+                  <ShieldCheck size={18} color="#15803D" />
+                </View>
+                <View>
+                  <Text style={styles.receivablesTitle}>Pelacakan Pengembalian Deposit (SOP H+1 s/d H+3)</Text>
+                  <Text style={styles.receivablesSubtitle}>
+                    Antrean dana titipan jaminan sewa (escrow) yang siap dikembalikan setelah verifikasi bebas tilang ETLE &amp; fisik unit.
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.totalPiutangBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                <Text style={[styles.totalPiutangText, { color: '#065F46' }]}>
+                  Tertahan: {rp(summary.refundQueue?.reduce((acc, q) => acc + q.depositHeld, 0) || 0)}
+                </Text>
+              </View>
+            </View>
+
+            {(!summary.refundQueue || summary.refundQueue.length === 0) ? (
+              <EmptyState
+                icon={ShieldCheck}
+                title="Semua deposit jaminan telah diselesaikan"
+                text="Tidak ada dana jaminan tertahan dari reservasi yang telah selesai."
+              />
+            ) : (
+              <View style={styles.receivablesGrid}>
+                {summary.refundQueue.map((q) => (
+                  <View key={q.id} style={[styles.recCard, { borderColor: '#BBF7D0' }]}>
+                    <View style={styles.recCardTop}>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={[styles.recCode, { color: '#059669' }]}>{q.inquiryCode}</Text>
+                        <Text style={styles.recCustomerName} numberOfLines={1}>{q.customerName}</Text>
+                        <Text style={styles.recVehicle} numberOfLines={1}>{q.vehicleName}</Text>
+                      </View>
+                      <View style={[styles.recDateBadge, { backgroundColor: '#DCFCE7' }]}>
+                        <Text style={[styles.recDateBadgeText, { color: '#15803D' }]}>
+                          Selesai: {fmtDate(q.endDate)}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={[styles.recBreakdownBox, { backgroundColor: '#F0FDF4' }]}>
+                      <View style={styles.recRow}>
+                        <Text style={styles.recRowLabel}>Deposit Awal:</Text>
+                        <Text style={styles.recRowVal}>{rp(q.depositPaid)}</Text>
+                      </View>
+                      <View style={[styles.recRow, { paddingTop: 4, borderTopWidth: 1, borderTopColor: '#DCFCE7' }]}>
+                        <Text style={[styles.recRowLabel, { fontWeight: '800', color: '#15803D' }]}>Siap Dikembalikan:</Text>
+                        <Text style={[styles.recRowVal, { fontWeight: '900', color: '#059669', fontSize: 13.5 }]}>
+                          {rp(q.depositHeld)}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.recActions}>
+                      <TouchableOpacity
+                        style={[styles.recWhatsAppBtn, { backgroundColor: '#059669' }]}
+                        onPress={() => setSelectedRefundItem(q)}
+                      >
+                        <RotateCcw size={14} color="#FFFFFF" />
+                        <Text style={styles.recWhatsAppText}>Proses Refund</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.recOpenBtn}
+                        onPress={() =>
+                          openWhatsAppTo(
+                            q.customerPhone,
+                            `Halo ${q.customerName}, verifikasi unit ${q.vehicleName} (${q.inquiryCode}) telah selesai dan bebas tilang ETLE. Mohon konfirmasi nomor rekening untuk pengembalian deposit jaminan sebesar ${rp(q.depositHeld)}. Terima kasih - Electra.`
+                          )
+                        }
+                        accessibilityLabel="Konfirmasi Rekening via WA"
+                      >
+                        <MessageCircle size={15} color="#059669" />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.recOpenBtn}
+                        onPress={() => onOpenInquiry(q.inquiryCode, q.id)}
+                        accessibilityLabel="Buka Detail Pesanan"
+                      >
+                        <ExternalLink size={15} color="#475569" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
               </View>
             )}
           </View>

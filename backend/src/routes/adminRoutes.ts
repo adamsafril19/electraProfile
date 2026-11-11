@@ -16,6 +16,7 @@ router.get('/inquiries', AdminController.listInquiries);
 router.patch('/inquiries/:id/status', AdminController.updateInquiryStatus);
 router.put('/inquiries/:id/driver', AdminController.assignDriver);
 router.get('/fleet', AdminController.listFleet);
+router.post('/fleet', AdminController.createVehicle);
 router.patch('/fleet/:id', AdminController.updateVehicle);
 
 router.get('/drivers', AdminController.listDrivers);

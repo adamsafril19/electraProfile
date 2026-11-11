@@ -4,20 +4,21 @@ import { useRouter } from 'expo-router';
 import { BatteryCharging, Gauge, PlugZap, Users } from 'lucide-react-native';
 import { Vehicle } from '../types/fleet';
 import { COLORS } from '../constants/colors';
+import { useLanguage } from '../context/LanguageContext';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
   onBookNow: (vehicle: Vehicle) => void;
 }
 
-const formatCategory = (type: string) => {
+const formatCategory = (type: string, isEn: boolean) => {
   switch (type) {
     case 'CITY_CAR':
-      return 'City Car';
+      return isEn ? 'City Car EV' : 'City Car';
     case 'COMPACT_SUV':
-      return 'Compact SUV';
+      return isEn ? 'Crossover & SUV' : 'Compact SUV';
     case 'MPV':
-      return 'Family MPV (7-Seat)';
+      return isEn ? 'Family MPV (7-Seats)' : 'Family MPV (7-Seat)';
     default:
       return type;
   }
@@ -27,6 +28,7 @@ const webTransition = Platform.OS === 'web' ? ({ transitionProperty: 'transform,
 const webImageTransition = Platform.OS === 'web' ? ({ transitionProperty: 'transform', transitionDuration: '350ms' } as any) : null;
 
 export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) => {
+  const { locale, t } = useLanguage();
   const router = useRouter();
   const [hovered, setHovered] = useState(false);
 
@@ -53,7 +55,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) 
           accessibilityLabel={`${vehicle.brand} ${vehicle.model}`}
         />
         <View style={styles.categoryBadge}>
-          <Text style={styles.categoryBadgeText}>{formatCategory(vehicle.bodyType)}</Text>
+          <Text style={styles.categoryBadgeText}>{formatCategory(vehicle.bodyType, locale === 'en')}</Text>
         </View>
         {vehicle.tags && vehicle.tags.length > 0 && (
           <View style={styles.featureBadge}>
@@ -72,43 +74,43 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onBookNow }) 
 
         {/* Spesifikasi utama, satu baris dengan ikon */}
         <View style={styles.specsMatrix}>
-          <Spec icon={Gauge} value={`${vehicle.specs.rangeCltcKm} km`} label="Jarak" />
+          <Spec icon={Gauge} value={`${vehicle.specs.rangeCltcKm} km`} label={t("Jarak", "Range")} />
           <View style={styles.specDivider} />
-          <Spec icon={BatteryCharging} value={`${vehicle.specs.batteryCapacityKwh} kWh`} label="Baterai" />
+          <Spec icon={BatteryCharging} value={`${vehicle.specs.batteryCapacityKwh} kWh`} label={t("Baterai", "Battery")} />
           <View style={styles.specDivider} />
-          <Spec icon={Users} value={`${vehicle.specs.seatingCapacity}`} label="Kursi" />
+          <Spec icon={Users} value={`${vehicle.specs.seatingCapacity}`} label={t("Kursi", "Seats")} />
           <View style={styles.specDivider} />
-          <Spec icon={PlugZap} value={String(vehicle.specs.portType).replace('_', '/')} label="Port" />
+          <Spec icon={PlugZap} value={String(vehicle.specs.portType).replace('_', '/')} label={t("Port", "Port")} />
         </View>
 
         <View style={styles.equipmentBanner}>
           <View style={styles.checkDot} />
-          <Text style={styles.equipmentText}>Termasuk Portable Charger 2.2 kW & kabel grounding</Text>
+          <Text style={styles.equipmentText}>{t('Termasuk Portable Charger 2.2 kW & kabel grounding', 'Includes 2.2 kW Portable Charger & grounding cable')}</Text>
         </View>
 
         {/* Harga */}
         <View style={styles.pricingSection}>
           <View>
-            <Text style={styles.pricingLabel}>Lepas kunci • 24 jam</Text>
+            <Text style={styles.pricingLabel}>{t('Lepas kunci • 24 jam', 'Self-drive • 24 hours')}</Text>
             <Text style={styles.priceFigure}>
               Rp {lepasRate?.dailyRate.toLocaleString('id-ID')}
-              <Text style={styles.priceUnit}> / hari</Text>
+              <Text style={styles.priceUnit}> {t('/ hari', '/ day')}</Text>
             </Text>
           </View>
           {driverRate && (
             <View style={styles.driverSubInfo}>
-              <Text style={styles.driverSubLabel}>Dengan sopir</Text>
-              <Text style={styles.driverSubPrice}>Rp {driverRate.dailyRate.toLocaleString('id-ID')}/hari</Text>
+              <Text style={styles.driverSubLabel}>{t('Dengan sopir', 'With chauffeur')}</Text>
+              <Text style={styles.driverSubPrice}>Rp {driverRate.dailyRate.toLocaleString('id-ID')}{t('/hari', '/day')}</Text>
             </View>
           )}
         </View>
 
         <View style={styles.actionGrid}>
           <TouchableOpacity style={styles.btnOutline} onPress={goDetail} accessibilityRole="link">
-            <Text style={styles.btnOutlineText}>Detail Unit</Text>
+            <Text style={styles.btnOutlineText}>{t('Detail Unit', 'Unit Details')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.btnPrimary} onPress={() => onBookNow(vehicle)} accessibilityRole="button">
-            <Text style={styles.btnPrimaryText}>Reservasi WA →</Text>
+            <Text style={styles.btnPrimaryText}>{t('Reservasi WA →', 'Reserve WA →')}</Text>
           </TouchableOpacity>
         </View>
       </View>

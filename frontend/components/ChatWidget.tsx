@@ -235,8 +235,23 @@ export const ChatWidget: React.FC = () => {
         </View>
       )}
 
-      <TouchableOpacity
-        style={[styles.fab, { bottom, right: isMobile ? 12 : 20 }, isMobile && styles.fabSmall]}
+      <View style={[styles.fabWrapper, { bottom, right: isMobile ? 12 : 24 }]}>
+        {!open && !isMobile && (
+          <TouchableOpacity
+            style={styles.bubbleHelp}
+            onPress={() => setOpen(true)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.bubbleHelpTop}>
+              <View style={styles.greenDot} />
+              <Text style={styles.bubbleHelpTitle}>Butuh bantuan?</Text>
+            </View>
+            <Text style={styles.bubbleHelpSub}>Hubungi kami ➔</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          style={[styles.fab, isMobile && styles.fabSmall]}
         onPress={() => setOpen((v) => !v)}
         accessibilityRole="button"
         accessibilityLabel={open ? 'Tutup chat' : `Buka chat dengan admin${unread ? `, ${unread} pesan baru` : ''}`}
@@ -247,7 +262,8 @@ export const ChatWidget: React.FC = () => {
             <Text style={styles.unreadText}>{unread > 9 ? '9+' : unread}</Text>
           </View>
         )}
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     </>
   );
 };
@@ -255,8 +271,50 @@ export const ChatWidget: React.FC = () => {
 const fixed: any = Platform.OS === 'web' ? 'fixed' : 'absolute';
 
 const styles = StyleSheet.create({
-  fab: {
+  fabWrapper: {
     position: fixed,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 70,
+  },
+  bubbleHelp: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#03192A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  bubbleHelpTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  greenDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+  bubbleHelpTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0B1C30',
+  },
+  bubbleHelpSub: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#0B72C9',
+    marginTop: 2,
+    paddingLeft: 13,
+  },
+  fab: {
     width: 56,
     height: 56,
     borderRadius: 28,

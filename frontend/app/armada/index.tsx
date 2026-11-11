@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Head from 'expo-router/head';
 import { COLORS } from '../../constants/colors';
+import { useLanguage } from '../../context/LanguageContext';
 import { Vehicle } from '../../types/fleet';
 import { fetchFleetResult } from '../../services/api';
 import { OfflineBanner } from '../../components/OfflineBanner';
@@ -10,6 +11,7 @@ import { WhatsAppModal } from '../../components/WhatsAppModal';
 import { FadeIn } from '../../components/FadeIn';
 
 export default function FleetCatalogScreen() {
+  const { locale, t } = useLanguage();
   const [fleet, setFleet] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBodyType, setSelectedBodyType] = useState<string>('ALL');
@@ -44,17 +46,17 @@ export default function FleetCatalogScreen() {
     });
 
   const sortOptions = [
-    { label: 'Rekomendasi', value: 'DEFAULT' as const },
-    { label: 'Termurah', value: 'PRICE' as const },
-    { label: 'Jarak terjauh', value: 'RANGE' as const },
-    { label: 'Kursi terbanyak', value: 'SEATS' as const },
+    { label: t('Rekomendasi', 'Recommended'), value: 'DEFAULT' as const },
+    { label: t('Termurah', 'Lowest Price'), value: 'PRICE' as const },
+    { label: t('Jarak terjauh', 'Longest Range'), value: 'RANGE' as const },
+    { label: t('Kursi terbanyak', 'Most Seats'), value: 'SEATS' as const },
   ];
 
   const categories = [
-    { label: 'Semua Kategori', value: 'ALL' },
-    { label: 'City Car (4 Kursi)', value: 'CITY_CAR' },
-    { label: 'Compact SUV (5 Kursi)', value: 'COMPACT_SUV' },
-    { label: 'Family MPV (7 Kursi)', value: 'MPV' },
+    { label: t('Semua Kategori', 'All Categories'), value: 'ALL' },
+    { label: t('City Car (4 Kursi)', 'City Car (4 Seats)'), value: 'CITY_CAR' },
+    { label: t('Compact SUV (5 Kursi)', 'Compact SUV (5 Seats)'), value: 'COMPACT_SUV' },
+    { label: t('Family MPV (7 Kursi)', 'Family MPV (7 Seats)'), value: 'MPV' },
   ];
 
   return (
@@ -67,12 +69,15 @@ export default function FleetCatalogScreen() {
       <View style={styles.header}>
         <View style={styles.headerInner}>
           <View style={styles.eyebrowRow}>
-            <Text style={styles.eyebrowText}>KATALOG MOBIL LISTRIK</Text>
+            <Text style={styles.eyebrowText}>{t('KATALOG MOBIL LISTRIK', 'ELECTRIC FLEET CATALOG')}</Text>
             <View style={styles.eyebrowLine} />
           </View>
-          <Text style={styles.title}>Pilihan Armada Ramah Lingkungan</Text>
+          <Text style={styles.title}>{t('Pilihan Armada Ramah Lingkungan', 'Eco-Friendly Electric Fleet')}</Text>
           <Text style={styles.subtitle}>
-            Seluruh kendaraan diserahkan dengan level baterai minimal 80%–100%, kabel pengisian portable, dan dukungan penggantian unit darurat.
+            {t(
+              'Seluruh kendaraan diserahkan dengan level baterai minimal 80%–100%, kabel pengisian portable, dan dukungan penggantian unit darurat.',
+              'All vehicles are handed over with at least 80%–100% battery SoC, a portable charging cable, and emergency replacement vehicle support.'
+            )}
           </Text>
 
           {/* Corporate Category Filter Pills */}
@@ -102,10 +107,10 @@ export default function FleetCatalogScreen() {
         {!loading && fleet.length > 0 && (
           <View style={styles.toolbar}>
             <Text style={styles.count}>
-              {filteredFleet.length} unit {selectedBodyType === 'ALL' ? 'tersedia' : 'pada kategori ini'}
+              {filteredFleet.length} {t('unit', 'units')} {selectedBodyType === 'ALL' ? t('tersedia', 'available') : t('pada kategori ini', 'in this category')}
             </Text>
             <View style={styles.sortRow}>
-              <Text style={styles.sortLabel}>Urutkan:</Text>
+              <Text style={styles.sortLabel}>{t('Urutkan:', 'Sort by:')}</Text>
               {sortOptions.map((o) => (
                 <TouchableOpacity
                   key={o.value}
@@ -129,7 +134,7 @@ export default function FleetCatalogScreen() {
           </View>
         ) : filteredFleet.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyTitle}>Tidak ada kendaraan dalam kategori ini.</Text>
+            <Text style={styles.emptyTitle}>{t('Tidak ada kendaraan dalam kategori ini.', 'No vehicles found in this category.')}</Text>
           </View>
         ) : (
           <View style={styles.grid}>
