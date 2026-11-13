@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import { Vehicle } from '../types/fleet';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 const REQUEST_TIMEOUT_MS = 15000;
 
 // ---------- Tipe ----------

@@ -1,5 +1,7 @@
 import { Vehicle } from '../types/fleet';
 
+const BACKEND_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
+
 export const INITIAL_FLEET: Vehicle[] = [
   {
     id: 'veh-001',
@@ -8,8 +10,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Air EV Long Range',
     bodyType: 'CITY_CAR',
     licensePlate: 'DK 1024 EV',
-    imageUrl: 'http://localhost:5000/images/cars/wuling-air-ev.png',
-    thumbnailUrl: 'http://localhost:5000/images/cars/wuling-air-ev.png',
+    imageUrl: `${BACKEND_URL}/images/cars/wuling-air-ev.png`,
+    thumbnailUrl: `${BACKEND_URL}/images/cars/wuling-air-ev.png`,
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Best Seller', 'Paling Irit', 'Bebas Ganjil-Genap'],
@@ -45,8 +47,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Binguo EV Premium Range 410 km',
     bodyType: 'CITY_CAR',
     licensePlate: 'DK 1125 EV',
-    imageUrl: 'http://localhost:5000/images/cars/wuling-binguo-ev.png',
-    thumbnailUrl: 'http://localhost:5000/images/cars/wuling-binguo-ev.png',
+    imageUrl: `${BACKEND_URL}/images/cars/wuling-binguo-ev.png`,
+    thumbnailUrl: `${BACKEND_URL}/images/cars/wuling-binguo-ev.png`,
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Favorit Wisatawan', 'Fast Charging Support', 'Retro Elegan'],
@@ -84,8 +86,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Atto 3 Superior Extended',
     bodyType: 'COMPACT_SUV',
     licensePlate: 'DK 1236 EV',
-    imageUrl: 'http://localhost:5000/images/cars/byd-atto-3.png',
-    thumbnailUrl: 'http://localhost:5000/images/cars/byd-atto-3.png',
+    imageUrl: `${BACKEND_URL}/images/cars/byd-atto-3.png`,
+    thumbnailUrl: `${BACKEND_URL}/images/cars/byd-atto-3.png`,
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Premium SUV', 'CCS2 Universal', 'Blade Battery'],
@@ -124,8 +126,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'M6 Superior Extended (7-Seater MPV)',
     bodyType: 'MPV',
     licensePlate: 'DK 1347 EV',
-    imageUrl: 'http://localhost:5000/images/cars/byd-m6.webp',
-    thumbnailUrl: 'http://localhost:5000/images/cars/byd-m6.webp',
+    imageUrl: `${BACKEND_URL}/images/cars/byd-m6.webp`,
+    thumbnailUrl: `${BACKEND_URL}/images/cars/byd-m6.webp`,
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Keluarga 7-Seat', 'Paling Luas & Nyaman', 'CCS2 Universal'],
@@ -164,8 +166,8 @@ export const INITIAL_FLEET: Vehicle[] = [
     model: 'Ioniq 5 Signature Long Range',
     bodyType: 'COMPACT_SUV',
     licensePlate: 'DK 1458 EV',
-    imageUrl: 'http://localhost:5000/images/cars/hyundai-ioniq-5.webp',
-    thumbnailUrl: 'http://localhost:5000/images/cars/hyundai-ioniq-5.webp',
+    imageUrl: `${BACKEND_URL}/images/cars/hyundai-ioniq-5.webp`,
+    thumbnailUrl: `${BACKEND_URL}/images/cars/hyundai-ioniq-5.webp`,
     status: 'AVAILABLE',
     isActive: true,
     tags: ['Futuristik Premium', 'Ultra Fast 350kW', 'Fitur V2L Bivak'],

@@ -1,7 +1,7 @@
 import { INITIAL_FLEET } from '../constants/fleetData';
 import { Vehicle, BookingFormInput } from '../types/fleet';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 const REQUEST_TIMEOUT_MS = 10000;
 
 // fetch tanpa batas waktu bisa menggantung selamanya saat server mati/lambat

@@ -18,8 +18,14 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Izinkan request tanpa origin (seperti mobile apps, Postman) atau origin dalam daftar ENV
-      if (!origin || ENV.CORS_ORIGIN.includes(origin) || ENV.NODE_ENV === 'development') {
+      // Izinkan request tanpa origin (seperti mobile apps, Postman), wildcard '*', Vercel preview/prod, atau daftar ENV
+      if (
+        !origin ||
+        ENV.CORS_ORIGIN.includes('*') ||
+        ENV.CORS_ORIGIN.includes(origin) ||
+        ENV.NODE_ENV === 'development' ||
+        origin.endsWith('.vercel.app')
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Origin tidak diizinkan oleh CORS'));
